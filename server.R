@@ -88,6 +88,7 @@ shinyServer(function(input, output, session) {
     if (client == "tester"){
       client <- "test"
     }
+      client<<-client
     }
     
     
@@ -1085,7 +1086,6 @@ uso<<-uso
                                   sheet = "ASSOCIATIONS",
                                   startRow = 1)
         ASSOCIATIONS <- ASSOCIATIONS[c(1:4)]
-        file.remove("ASSOCIATIONS.txt")
         write.table(ASSOCIATIONS,
                     file = "ASSOCIATIONS.txt",
                     fileEncoding = "UTF-8")
@@ -1102,6 +1102,7 @@ uso<<-uso
           append = FALSE,
           allow.keywords = FALSE
         )
+        file.remove("ASSOCIATIONS.txt")
         ASSOCIATIONS <<- ASSOCIATIONS
       }
       #######################################PRODUCT_ASSOCIATIONS############
@@ -1229,12 +1230,16 @@ uso<<-uso
         
     
         names(PLANTILLA)<-gnames
+        if(divisa=="CLP"){
         names(PLANTILLA)[names(PLANTILLA) == 'Importe de las opciones facturadas (CLP)'] <- 'Importe de las opciones facturadas'
         names(PLANTILLA)[names(PLANTILLA) == 'Importe descuentos sobre plano tarifario (CLP)'] <- 'Importe descuentos sobre plano tarifario'
         names(PLANTILLA)[names(PLANTILLA) == 'Importe de las opciones descontadas (CLP)'] <- 'Importe de las opciones descontadas'
+        }
+        else if (divisa == "UF"){
         names(PLANTILLA)[names(PLANTILLA) == 'Importe de las opciones facturadas (UF)'] <- 'Importe de las opciones facturadas'
         names(PLANTILLA)[names(PLANTILLA) == 'Importe descuentos sobre plano tarifario (UF)'] <- 'Importe descuentos sobre plano tarifario'
         names(PLANTILLA)[names(PLANTILLA) == 'Importe de las opciones descontadas (UF)'] <- 'Importe de las opciones descontadas'
+        }
         PLANTILLA<<-PLANTILLA
         
        
@@ -1248,7 +1253,7 @@ uso<<-uso
           append = FALSE,
           allow.keywords = FALSE
         )
-
+        file.remove("Plantilla.txt")
     }
     #Run the following code if theres a file in the nombre and link text input
     if (!is.null(input$nombre)) {
@@ -1378,7 +1383,7 @@ uso<<-uso
         append = FALSE,
         allow.keywords = FALSE
       )
-      
+      file.remove("MOVISTAR_OPCIONES.txt")
       ########################################MOVISTAR_PAISES############
       MOVISTAR_PAISES <<- read.xlsx(contrato$datapath,
                                      sheet = "Movistar Paises",
@@ -1400,6 +1405,7 @@ uso<<-uso
         append = FALSE,
         allow.keywords = FALSE
       )
+      file.remove("MOVISTAR_PAISES.txt")
       MOVISTAR_PAISES<<-MOVISTAR_PAISES
       ########################################MOVISTAR_ZONAS############
       MOVISTAR_ZONAS <<- read.xlsx(contrato$datapath,
@@ -1422,6 +1428,7 @@ uso<<-uso
         append = FALSE,
         allow.keywords = FALSE
       )
+      file.remove("MOVISTAR_ZONAS.txt")
       MOVISTAR_ZONAS<<-MOVISTAR_ZONAS
       }
     }
@@ -1573,6 +1580,7 @@ Consolidado<-NULL
     
     
     ##################################CAMBIOS A USOS#########################
+    if(!is.null(input$usos)){
     month1 <- sapply(uso[,'Fecha'], substr, 6, 7)
     month <- as.numeric(month1)
     rm(month1)
@@ -1602,7 +1610,187 @@ Consolidado<-NULL
     }
     uso<-uso2
     uso<<-uso
+    }
+    ########################CAMBIOS A PLANTILLA SERVICIOS FACTURADOS##########
+    if (client=="igm"|(client=="afm"&!is.null(contrato))){
+    SFACTURADOS<-subset(PLANTILLA,select = c("Acceso",
+                                             "Estado acceso",
+                                             "Producto",
+                                             "Tipo de producto",
+                                             "Centro de facturación",
+                                             "Importe de las opciones facturadas",
+                                             "Importe descuentos sobre plano tarifario",
+                                             "Importe de las opciones descontadas"))
+    SFACTURADOS<<-SFACTURADOS
+    #source("pj_igmSF.r", local = TRUE)
+   
+    
+    
+      SFOpciones<-subset(SFACTURADOS,
+                         SFACTURADOS[["Tipo de producto"]]=="Option")
+      SFOpciones<<-SFOpciones
+      SFPlanes<-subset(SFACTURADOS,
+                       SFACTURADOS[["Tipo de producto"]]=="Plano tarifario")
+      
+      SFPlanes<<-SFPlanes
+      SFPlanes2<-SFPlanes
+      ######################Ajuste de Servicios Facturados################
+      
+      ###############################################################################Parte 1 <-Ver duplicados de no duplicados
+      a<-duplicated(SFPlanes2[["Acceso"]],fromLast = FALSE)
+      b<-duplicated(SFPlanes2[["Acceso"]],fromLast = TRUE)
+      SFPlanes2[["Duplicados"]]<-a
+      SFPlanes2[["Duplicados2"]]<-b
+      SFduplicados<-subset(SFPlanes2,SFPlanes2[["Duplicados"]]=="TRUE"|
+                             SFPlanes2[["Duplicados2"]]=="TRUE")
+      SF_no_duplicados<-subset(SFPlanes2,SFPlanes2[["Duplicados"]]=="FALSE"&
+                                 SFPlanes2[["Duplicados2"]]=="FALSE")
+      #############################################################################Parte 2 <- De los duplicados segmentar los que se sacan (sin cobro), de los que no
+      if(length(SFduplicados[["Acceso"]])>0){
+        if (client == "igm"){
+        SF_a_evaluar<- SFduplicados
+        SF_fueradecontratoSC<-subset(SF_a_evaluar,
+                                     SF_a_evaluar[["Importe de las opciones descontadas"]]==0)
+        SF_fueradecontratoCC<-subset(SF_a_evaluar,
+                                     SF_a_evaluar[["Importe de las opciones descontadas"]]!=0)
+        
+        SF_CPduplicados<-SF_fueradecontratoCC
+        }
+        else if (client == "afm"){
+          SF_a_evaluar<- merge(SFduplicados,
+                               MOVISTAR_PLANES,
+                               by = "Producto",
+                               all.x = TRUE)
+          SF_fueradecontratoSC<-subset(SF_a_evaluar,
+                                       is.na(SF_a_evaluar[["Tipo"]])==TRUE &
+                                         SF_a_evaluar[["Importe de las opciones descontadas"]]==0)
+          SF_fueradecontratoCC<-subset(SF_a_evaluar,
+                                       is.na(SF_a_evaluar[["Tipo"]])==TRUE &
+                                         SF_a_evaluar[["Importe de las opciones descontadas"]]!=0)
+          SF_en_contrato<-subset(SF_a_evaluar,
+                                 is.na(SF_a_evaluar[["Tipo"]])==FALSE)
+          SF_CPduplicados<-rbind(SF_en_contrato,SF_fueradecontratoCC)
+        }
+        #########################################################################Parte 3  <- Ver si los que tienen cobro aun estan duplicados tras haber sacado los sin cobro
+        SF_CPduplicados[["Duplicado"]]<-NULL
+        SF_CPduplicados[["Duplicado2"]]<-NULL
+        a<-duplicated(SF_CPduplicados[["Acceso"]],fromLast = FALSE)
+        b<-duplicated(SF_CPduplicados[["Acceso"]],fromLast = TRUE)
+        SF_CPduplicados[["Duplicados"]]<-a
+        SF_CPduplicados[["Duplicados2"]]<-b
+        SFduplicados2<-subset(SF_CPduplicados,SF_CPduplicados[["Duplicados"]]=="TRUE"|SF_CPduplicados[["Duplicados2"]]=="TRUE")
+        SFduplicadosbuenos<-subset(SF_CPduplicados,SF_CPduplicados[["Duplicados"]]=="FALSE"&SF_CPduplicados[["Duplicados2"]]=="FALSE")
+        ###########################################################################Parte 4 <- Se suman los cobros de los que tienen multiples cobros creando tabla aparte
+        if(length(SFduplicados2[["Acceso"]])>0){
+          accesosunicos<-as.list(unique(SFduplicados2["Acceso"]))
+          i<-1
+          
+          Acc<-c()
+          EstAcc<-c()
+          Prod<-c()
+          TdProd<-c()
+          CdF<-c()
+          IOF<-c()
+          IDPT<-c()
+          IOD<-c()
+          Accf<-c()
+          for(i in 1:lengths(accesosunicos)){
+            SFUnico<-subset(SFPlanes2,SFPlanes2[["Acceso"]] == as.character(accesosunicos[["Acceso"]][i]))
+            
+            Acc[i]<-SFUnico[["Acceso"]][1]
+            EstAcc[i]<-"No determinado"
+            Prod[i]<-"Multi producto"
+            TdProd[i]<-"Plano tarifario"
+            CdF[i]<-SFUnico[["Centro de facturación"]][1]
+            IOF[i]<-sum(SFUnico[["Importe de las opciones facturadas"]][1:length(SFUnico[["Acceso"]])])
+            IDPT[i]<-sum(SFUnico[["Importe descuentos sobre plano tarifario"]][1:length(SFUnico[["Acceso"]])])
+            IOD[i]<-sum(SFUnico[["Importe de las opciones descontadas"]][1:length(SFUnico[["Acceso"]])])
+            
+          }
+          Accesos<-(unique(SFduplicados2["Acceso"]))
+          Accesos["Estado acceso"]<-EstAcc
+          Accesos["Producto"]<-Prod
+          Accesos["Tipo de producto"]<-TdProd
+          Accesos["Centro de facturación"]<-CdF
+          Accesos["Importe de las opciones facturadas"]<-IOF
+          Accesos["Importe descuentos sobre plano tarifario"]<-IDPT
+          Accesos["Importe de las opciones descontadas"]<-IOD
+          
+          SFUnicos<-Accesos
+          
+        }
+        else {
+          SFUnicos<-subset(SFACTURADOS,SFACTURADOS[["Acceso"]]==1&SFACTURADOS[["Acceso"]]!=1)
+        }
+        #############################################################################Parte 5 Uniones
+        #SF_Final tiene los No duplicados de la Parte 1, Los duplicados cuyo par tenia cobro 0 de la parte 3 (SFduplicadosbuenos) y los SF Unicos que salen de la consolidacion de los que tienen multiples cobros
+        #SF_Apartados tiene los duplicados con cobro
+        SF_no_duplicados[["Duplicados"]]<-NULL
+        SF_no_duplicados[["Duplicados2"]]<-NULL
+         
+        SFduplicadosbuenos2<-subset(SFduplicadosbuenos,select = c("Acceso",
+                                                                  "Estado acceso",
+                                                                  "Producto",
+                                                                  "Tipo de producto",
+                                                                  "Centro de facturación",
+                                                                  "Importe de las opciones facturadas",
+                                                                  "Importe descuentos sobre plano tarifario",
+                                                                  "Importe de las opciones descontadas"))
+        
+        if (length(SFUnicos[["Acceso"]])>0){
+        SF_Final<-rbind(SFUnicos,SF_no_duplicados,SFduplicadosbuenos2)
+        }
+        else{
+          SF_Final<-rbind(SF_no_duplicados,SFduplicadosbuenos2)
+        }
+        SFduplicados2<-subset(SFduplicados2,select = c("Acceso",
+                                                       "Estado acceso",
+                                                       "Producto",
+                                                       "Tipo de producto",
+                                                       "Centro de facturación",
+                                                       "Importe de las opciones facturadas",
+                                                       "Importe descuentos sobre plano tarifario",
+                                                       "Importe de las opciones descontadas"))
+        SF_fueradecontratoSC<-subset(SF_fueradecontratoSC,select = c("Acceso",
+                                                                     "Estado acceso",
+                                                                     "Producto",
+                                                                     "Tipo de producto",
+                                                                     "Centro de facturación",
+                                                                     "Importe de las opciones facturadas",
+                                                                     "Importe descuentos sobre plano tarifario",
+                                                                     "Importe de las opciones descontadas"))
+        if(length(SFduplicados2[["Acceso"]])>0){
+          SFduplicados2<-SFduplicados2[order(x = SFduplicados2[["Acceso"]]),]
+          SFduplicados2["Revisar"]<-1
+        }
+        if(length(SF_fueradecontratoSC[["Acceso"]])>0){
+          SF_fueradecontratoSC["Revisar"]<-2
+        }
+        SF_Apartados<-rbind(SFduplicados2,SF_fueradecontratoSC)
+      }
+      else{
+        SF_Final<-SF_no_duplicados
+        SFPlanes2["Revisar"]<-0
+        SF_Apartados<-subset(SFPlanes2,SFPlanes2[["Duplicados"]]=="TRUE"|
+                               SFPlanes2[["Duplicados2"]]=="TRUE")
+        
+      }
+      SF_Final[["Duplicados"]]<-NULL
+      SF_Final[["Duplicados2"]]<-NULL
+      #rm(SF_a_evaluar, SF_CPduplicados, SF_en_contrato, SF_fueradecontratoCC,SFduplicadosbuenos,SFduplicadosbuenos2,SF_fueradecontratoSC)
+      rm(SF_no_duplicados,SFduplicados,SFduplicados2,SFPlanes2,SFUnicos,SFPlanesA,SFPlanesDb)
+      SFPlanes_final<-SF_Final
+      if(length(SFOpciones[["Acceso"]])>0){
+        
+        SF_Final<-rbind(SF_Final,SFOpciones)
+      }
+      SF_Final<<-SF_Final
+      SF_Apartados<<-SF_Apartados
+      SFPlanes_final<<-SFPlanes_final
+    }
+    print("SFACTURADOS LISTO")
     ############################UNION USO - ACCESSES #################
+    if(client != "afm"){
     if(!is.null(input$usos)&!is.null(export)){
       if(usuarioid=="si"){
         backup<-uso
@@ -1796,16 +1984,13 @@ Consolidado<-NULL
         ACCESSES2[["Acceso fix"]]<-NULL
         Consolidado<-merge(uso,ACCESSES2,by = "Acceso",all.x = TRUE)
       }
-    }
+    }}
     Consolidado<<-Consolidado #Consolidado contiene uso y ACCESSES
     #################################INFORME DE GESTION DE TELEFONIA#####
     
     if(client == "igm"){
       if(!is.null(input$usos)&!is.null(export)&!is.null(plantilla)&!is.null(input$factura)){
-        SFACTURADOS<<-PLANTILLA
-        source("pj_afm.r", local = TRUE)
-        print("SFACTURADOS LISTO")
-
+        
         #se modifica plan eliminando las columnas innecesarias
         PLAN2 <- SF_Final
         #Se dejan solo los que son plano tarifario para el analisis
@@ -1909,14 +2094,14 @@ Consolidado<-NULL
           cdr3<<-subset(cdr,
                         (cdr[["Servicio llamado"]]=="Números especiales" 
                          & cdr[["Tipo de llamada"]]!="SMS"))
-          source("pj_afm.r", local = TRUE)
+          #source("pj_afm.r", local = TRUE)
           {
             ################Consolidado############
+            break
             SFPlanes_final<-SFPlanes_final
             Fact<<-merge(uso,
                          SFPlanes_final,
-                         by = c("Acceso fix",
-                                "Acceso",
+                         by = c("Acceso",
                                 "Centro de facturacion"),
                          all.x = TRUE)
             facturas2<-facturas

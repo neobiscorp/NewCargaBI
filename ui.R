@@ -171,6 +171,8 @@ shinyUI(fluidPage(
         )
       ),
       #Create conditional panel with a checkbox
+      conditionalPanel(
+        condition = "input.Client != 'Anomalias de Facturacion Movil'",
         selectInput(
           "usuarioid",
           label = h5("Uso tiene Usuario ID con los Cecos del cliente"),
@@ -179,6 +181,7 @@ shinyUI(fluidPage(
             "No"
           ),
           selected = ""
+        )
         ),
       #Create conditional panel with a checkbox
       conditionalPanel(
