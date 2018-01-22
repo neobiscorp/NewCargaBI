@@ -63,10 +63,14 @@ shinyServer(function(input, output, session) {
     presupuesto <- input$presupuesto
     cuentas <- input$cuentas
     contrato <- input$contrato
-    proveedor <<-input$proveedor
-    usuarioid <<-input$usuarioid
-    customfield <<- input$customfield
-    divisa<<- input$divisa
+    proveedor <-input$proveedor
+    usuarioid <-input$usuarioid
+    customfield <- input$customfield
+    divisa<- input$divisa
+    proveedor<<-proveedor
+    usuarioid<<-usuarioid
+    customfield<<-customfield
+    divisa<<-divisa
     #Change name of client input to the same name of the database
     {
 
@@ -355,7 +359,7 @@ shinyServer(function(input, output, session) {
         }
         
         uso<<-uso
-       
+        uso[["Acceso"]]<-as.character(uso[["Acceso"]])
         #Se seleccionan las columnas que requiere el informe
         if (client=="igm"){
           CF<-subset(uso,is.na(uso[["Acceso"]]))
@@ -1623,7 +1627,7 @@ Consolidado<-NULL
                                              "Importe de las opciones descontadas"))
     SFACTURADOS<<-SFACTURADOS
     #source("pj_igmSF.r", local = TRUE)
-   
+   SFACTURADOS[["Acceso"]]<-as.character(SFACTURADOS[["Acceso"]])
     
     
       SFOpciones<-subset(SFACTURADOS,
@@ -1792,7 +1796,7 @@ Consolidado<-NULL
     ############################UNION USO - ACCESSES #################
     if(client != "afm"){
     if(!is.null(input$usos)&!is.null(export)){
-      if(usuarioid=="si"){
+      if(usuarioid=="Si"){
         backup<-uso
         CantMNG<-as.numeric(length(names(MNG)))
         uso1<-subset(uso,uso[["Usuario ID"]]=="")
@@ -1982,6 +1986,7 @@ Consolidado<-NULL
         ACCESSES2[["Tipo"]]<-NULL
         ACCESSES2[["Proveedor"]]<-NULL
         ACCESSES2[["Acceso fix"]]<-NULL
+        
         Consolidado<-merge(uso,ACCESSES2,by = "Acceso",all.x = TRUE)
       }
     }}
