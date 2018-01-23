@@ -1137,7 +1137,7 @@ uso<<-uso
     }
     #Run the following code if theres a file in the presupuesto file input
     if (!is.null(presupuesto)){
-      dbGetQuery(DB, "SET NAMES 'utf8';")
+      dbGetQuery(DB, "SET NAMES 'latin1';")
       dataFilesUF2 <- NULL
       dataFilesUF2 <- lapply(input$presupuesto[['datapath']], function(x) read.csv2(x,encoding = "UTF-8",check.names = FALSE,header = TRUE))
       
@@ -1172,15 +1172,8 @@ uso<<-uso
         names(presupuestos)[names(presupuestos) == 'Descuentos (UF)'] <- 'Descuentos'
         
       }
-      presupuestos<-subset(presupuestos,select = c("Acceso",
-                                                   "Tipo",
-                                                   "Usuario ID",
-                                                   "Centro de facturación",
-                                                   "Proveedor",
-                                                   "Total",
-                                                   "Descuentos",
-                                                   "Plano tarifario",
-                                                   "Fecha"))
+      presupuestos<<-presupuestos
+      
       
       for (k in 1:12) {
         presupuestos[, 'Período de'] <-
@@ -1196,6 +1189,15 @@ uso<<-uso
                   sep = "/"))
         #Delete the Column MES that its not needed now
         presupuestos[, 'Período de'] <- NULL
+        presupuestos<-subset(presupuestos,select = c("Acceso",
+                                                     "Tipo",
+                                                     "Usuario ID",
+                                                     "Centro de facturación",
+                                                     "Proveedor",
+                                                     "Total",
+                                                     "Descuentos",
+                                                     "Plano tarifario",
+                                                     "Fecha"))
         presupuestos<<-presupuestos
       
         
