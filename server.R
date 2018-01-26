@@ -551,27 +551,49 @@ uso<<-uso
             write.table(ACCESSES, file = "ACCESSES.txt", fileEncoding = "UTF-8")
             ACCESSES2 <-
               read.table(file = "ACCESSES.txt", encoding = "UTF-8")
+            
             CUSTOM <- subset(ACCESSES2,select = c("ACCESS.NUMBER",
                                                   "CUSTOM_FIELD.BW",
-                                                  "CUSTOM_FIELD.Cliente",
                                                   "CUSTOM_FIELD.Descripción",
                                                   "CUSTOM_FIELD.Destino",
                                                   "CUSTOM_FIELD.Prioridad",
                                                   "CUSTOM_FIELD.Red.de.acceso",
-                                                  "CUSTOM_FIELD.Switch"))
+                                                  "CUSTOM_FIELD.Geo.Referencia",
+                                                  "CUSTOM_FIELD.Tipología",
+                                                  "CUSTOM_FIELD.Edificación",
+                                                  "CUSTOM_FIELD.CAPEX.OPEX"))
             
             names(CUSTOM)<-c("Acceso",
                              "BW",
-                             "Cliente",
                              "Descripción",
                              "Destino",
                              "Prioridad",
                              "Red de acceso",
-                             "Switch")
+                             "Geo Referencia",
+                             "Tipología",
+                             "Edificación",
+                             "CAPEX/OPEX")
             
             CUSTOM<<-CUSTOM
           }
+          
         }
+        if(client == "igm"){
+          if (customfield == "Si"){
+            
+            write.table(ACCESSES, file = "ACCESSES.txt", fileEncoding = "UTF-8")
+            ACCESSES2 <-
+              read.table(file = "ACCESSES.txt", encoding = "UTF-8")
+            
+            CUSTOM <- subset(ACCESSES2,select = c("ACCESS.NUMBER",
+                                                  "CUSTOM_FIELD.Tipología"))
+            
+            names(CUSTOM)<-c("Acceso",
+                             "Tipología")
+            
+            CUSTOM<<-CUSTOM
+          }
+          }
         a<-as.Date(ACCESSES$ELIGIBILITY.DATE, origin="1899-12-30")
         ACCESSES[,'Fecha Renovación']<-as.Date(ACCESSES$ELIGIBILITY.DATE, origin="1899-12-30")
         ACCESSES <-
@@ -1618,7 +1640,7 @@ Consolidado<-NULL
     uso<<-uso
     }
     ########################CAMBIOS A PLANTILLA SERVICIOS FACTURADOS##########
-    if (client=="igm"|(client=="afm"&!is.null(contrato))){
+    if ((client=="igm"&!is.null(plantilla))|(client=="afm"&!is.null(contrato))&!is.null(plantilla)){
     SFACTURADOS<-subset(PLANTILLA,select = c("Acceso",
                                              "Estado acceso",
                                              "Producto",
@@ -2070,7 +2092,7 @@ Consolidado<-NULL
         Consolidado<<-Consolidado
       }
     #################################INFORME DE GESTION DE ENLACES#########
-    if (client == "ige"){
+    if (client == "ige"|client == "igm"){
 
       if(!is.null(input$usos)&!is.null(export)){
         Consolidado1<-subset(Consolidado,Consolidado[["Equipo"]]=="")
