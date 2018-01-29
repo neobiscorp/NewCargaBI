@@ -90,7 +90,7 @@ shinyUI(fluidPage(
       ),
       #Create conditional Panel accepting multiple csv files
       conditionalPanel(
-        condition = "input.Client =='Informe Gestion Impresion'||input.Client =='tester'",
+        condition = "input.Client =='Informe Gestion Impresion'||input.Client =='Informe Gestion Telefonia'||input.Client =='tester'",
         fileInput(
           'presupuesto',
           'Elegir los Archivos CSV que contenga los presupuestos',

@@ -1166,6 +1166,8 @@ uso<<-uso
       #Append all usos files to the same dataframe
       
       presupuestos <- rbindlist(dataFilesUF2)
+      
+      
       a<-as.character(names(presupuestos))
       d<-matrix(nrow = length(a),ncol = 1)
       for(i in 1:length(a)){
@@ -1174,14 +1176,34 @@ uso<<-uso
           print("Encontrado")
           d[i,1]<-"Acceso"
         }
+        else if (c=="ombre"){
+          print("Encontrado 2")
+          d[i,1]<-"Nombre"
+        }
         else{
           d[i,1]<-a[i]
         }
       }
       b<-as.character(d)
       colnames(presupuestos)<-b
-      rm(a,b,c,d)
       
+      rm(a,b,c,d)
+      presupuestos<<-presupuestos
+      if (client=="igm"){
+        CF<-subset(presupuestos,is.na(presupuestos[["Acceso"]]))
+        presupuestos1<-subset(presupuestos,!is.na(presupuestos[["Acceso"]]))
+        if(length(CF[["Acceso"]])>0){
+          CF[["Acceso"]]<-CF[["Nombre"]]
+          CF[["Acceso fix"]]<-CF[["Nombre"]]
+          CF[["Centro de facturación"]]<-CF[["Nombre"]]
+          CF[["Tipo"]]<-"Centro de facturación"
+          presupuestos<-rbind(CF,presupuestos1)
+        }
+        presupuestos[["Nombre"]]<-NULL
+        rm(CF,presupuestos1)
+        
+        presupuestos<<-presupuestos
+      }
       if(divisa == "CLP"){
         names(presupuestos)[names(presupuestos) == 'Total (CLP)'] <- 'Total'
         names(presupuestos)[names(presupuestos) == 'Plano tarifario (CLP)'] <- 'Plano tarifario'
