@@ -390,16 +390,19 @@ shinyServer(function(input, output, session) {
                     "Descuento > Plano tarifario",
                     "Voz",
                     "Voz nacional",
-                    "Voz inter.",
+                    "Voz hacia Int",
+                    "Voz roaming",
                     "Datos",
                     "Datos nac.",
                     "Datos inter.",
                     "SMS/MMS",
                     "SMS/MMS nac.",
                     "SMS/MMS inter.",
+                    "SMS/MMS espec.",
                     "Voz (sec)",
                     "Voz nac. (sec)",
-                    "Voz inter. (sec)",
+                    "Voz hacia inter. (sec)",
+                    "Voz roaming (sec)",
                     "Datos (KB)",
                     "Datos nac. (KB)",
                     "Datos inter. (KB)",
@@ -1165,7 +1168,7 @@ uso<<-uso
       
       #Append all usos files to the same dataframe
       
-      presupuestos <- rbindlist(dataFilesUF2)
+      presupuestos <- rbindlist(dataFilesUF2,fill = TRUE)
       
       
       a<-as.character(names(presupuestos))
@@ -1194,7 +1197,6 @@ uso<<-uso
         presupuestos1<-subset(presupuestos,!is.na(presupuestos[["Acceso"]]))
         if(length(CF[["Acceso"]])>0){
           CF[["Acceso"]]<-CF[["Nombre"]]
-          CF[["Acceso fix"]]<-CF[["Nombre"]]
           CF[["Centro de facturación"]]<-CF[["Nombre"]]
           CF[["Tipo"]]<-"Centro de facturación"
           presupuestos<-rbind(CF,presupuestos1)
