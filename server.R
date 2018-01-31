@@ -2073,7 +2073,7 @@ Consolidado<-NULL
           )
         
         SinUsos<-subset(SinUsos,SinUsos[["usocant"]]==0)
-        SinUsos<-subset(SinUsos,SinUsos[["Meses"]]<=3) 
+        SinUsos<-subset(SinUsos,SinUsos[["Meses"]]<=3)
         SinUsos<<-SinUsos
         
         #Excepcion Aguas Andinas
@@ -2090,6 +2090,7 @@ Consolidado<-NULL
           }
         }
         
+        Consolidado[,'Descuento > Otros']<-Consolidado[,'Descuentos'] - Consolidado[,'Descuento > Plano tarifario']
         Consolidado<<-Consolidado
         dbWriteTable(
           DB,
@@ -2107,6 +2108,7 @@ Consolidado<-NULL
           append = FALSE,
           allow.keywords = FALSE
         )
+        
         
       #source("pj_igm_db.r", local = TRUE)
       }
