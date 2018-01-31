@@ -188,7 +188,7 @@ shinyUI(fluidPage(
         condition = "input.Client =='Informe Gestion Enlace'||input.Client =='Informe Gestion Telefonia'||input.Client =='tester'",
         selectInput(
           "customfield",
-          label = h5("Export - ACCESSES presenta todos los CUSTOM_FIELD para Enlace o Telefonia Fija"),
+          label = h5("Export - ACCESSES presenta todos los CUSTOM_FIELD para Enlace o Telefonia"),
           choices = c(
             "Si",
             "No"

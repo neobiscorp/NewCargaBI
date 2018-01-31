@@ -1628,9 +1628,6 @@ uso<<-uso
     
     
     ##################################CAMBIOS SOBRE TABLAS###################
-Consolidado<-NULL
-    
-    
     ##################################CAMBIOS A USOS#########################
     if(!is.null(input$usos)){
     month1 <- sapply(uso[,'Fecha'], substr, 6, 7)
@@ -1830,7 +1827,7 @@ Consolidado<-NULL
       SF_Final[["Duplicados"]]<-NULL
       SF_Final[["Duplicados2"]]<-NULL
       #rm(SF_a_evaluar, SF_CPduplicados, SF_en_contrato, SF_fueradecontratoCC,SFduplicadosbuenos,SFduplicadosbuenos2,SF_fueradecontratoSC)
-      rm(SF_no_duplicados,SFduplicados,SFduplicados2,SFPlanes2,SFUnicos,SFPlanesA,SFPlanesDb)
+      #rm(SFUnicos,SFPlanesA,SFPlanesDb)
       SFPlanes_final<-SF_Final
       if(length(SFOpciones[["Acceso"]])>0){
         
@@ -2002,6 +1999,7 @@ Consolidado<-NULL
             uso[["MANAGEMENTORG8"]]<-NULL
           }
         }
+        
         if(CantMNG==8){
           Consolidado<-rbind(uso1,uso2,uso3,uso4,uso5,uso6,uso7,uso8)
         }
@@ -2027,6 +2025,8 @@ Consolidado<-NULL
           Consolidado<-uso1
         }
         Consolidado<-merge(Consolidado,ACCESSES2, by = "Acceso",all.x = TRUE)
+        
+        print("Consolidado contiene la union de Usos y ACCESSES por usuario id")
         uso<-backup
     }
       else if (usuarioid == "No"){
@@ -2035,10 +2035,19 @@ Consolidado<-NULL
         ACCESSES2[["Proveedor"]]<-NULL
         ACCESSES2[["Acceso fix"]]<-NULL
         
-        Consolidado<-merge(uso,ACCESSES2,by = "Acceso",all.x = TRUE)
+        Consolidado1<-merge(uso,ACCESSES2,by = "Acceso",all.x = TRUE)
+        Consolidado<<-Consolidado1
+        print("Consolidado contiene la union de Usos y ACCESSES por acceso")
       }
-    }}
-    Consolidado<<-Consolidado #Consolidado contiene uso y ACCESSES
+      else{
+        Consolidado<-NULL
+        print("Consolidado es NULL")
+      }
+    }
+    }
+    
+    Consolidado<<-Consolidado
+    #Consolidado contiene uso y ACCESSES
     #################################INFORME DE GESTION DE TELEFONIA#####
     
     if(client == "igm"){
@@ -2052,8 +2061,10 @@ Consolidado<-NULL
         PLAN2<-subset(PLAN2,select = c("Acceso","Producto","Importe de las opciones descontadas"))
         PLAN2[["Acceso"]]<-as.character(PLAN2[["Acceso"]])
         Consolidado[["Acceso"]]<-as.character(Consolidado[["Acceso"]])
+        PLAN2<<-PLAN2
         Consolidado<- merge(Consolidado,PLAN2,by.x ="Acceso",by.y = "Acceso", all.x = TRUE)
-        
+        print("Consolidado se le une los productos de servicios facturados")
+        Consolidado[,'Descuento > Otros'] <- Consolidado[,'Descuentos'] - Consolidado[,'Descuento > Plano tarifario']
         SinUsos<-Consolidado
         SinUsos<-subset(SinUsos,SinUsos[["Tipo"]]!="Centro de facturación")
         SinUsos<<-SinUsos
@@ -2081,7 +2092,7 @@ Consolidado<-NULL
           if(nombre == "Aguas Andinas"){
             probar<<-subset(Consolidado,Consolidado[["Centro de facturacion"]] == '-')
             if(length(probar[["Acceso"]])>0){
-              UAADP_usos2<-subset(Consolidado,Consolidado[["Centro de facturacion"]]!='-')
+              UAADP_usos2<<-subset(Consolidado,Consolidado[["Centro de facturacion"]]!='-')
               probar[["Centro de facturacion"]]<-NULL
               probar[,'Centro de facturacion']<-probar[,'Proveedor Nivel 3']
               Consolidado<-rbind(probar,UAADP_usos2)
@@ -2090,7 +2101,12 @@ Consolidado<-NULL
           }
         }
         
-        Consolidado[,'Descuento > Otros']<-Consolidado[,'Descuentos'] - Consolidado[,'Descuento > Plano tarifario']
+        if (customfield == "Si"){
+          Consolidado<-merge(Consolidado,CUSTOM,by = "Acceso", all.x = TRUE)}
+        else if (customfield=="No"){
+          Consolidado<-Consolidado
+        }
+      
         Consolidado<<-Consolidado
         dbWriteTable(
           DB,
@@ -2118,7 +2134,7 @@ Consolidado<-NULL
         Consolidado<<-Consolidado
       }
     #################################INFORME DE GESTION DE ENLACES#########
-    if (client == "ige"|client == "igm"){
+    if (client == "ige"){
 
       if(!is.null(input$usos)&!is.null(export)){
         Consolidado1<-subset(Consolidado,Consolidado[["Equipo"]]=="")
@@ -2128,13 +2144,12 @@ Consolidado<-NULL
           Consolidado1[["Equipo"]]<-"Otro"
           Consolidado<<-rbind(Consolidado1,Consolidado2)
         }
-        
-        #Se busca un merge de trazabilidad por proyeccion del periodo actual
         if (customfield == "Si"){
           Consolidado<-merge(Consolidado,CUSTOM,by = "Acceso", all.x = TRUE)}
         else if (customfield=="No"){
-          Consolidado<-uso
+          Consolidado<-Consolidado
         }
+      
         Consolidado<<-Consolidado
         
       }
@@ -2628,6 +2643,7 @@ Consolidado<-NULL
     ####################UPLOAD CONSOLIDADO############
     if(!is.null(Consolidado)){
       dbGetQuery(DB, "SET NAMES 'latin1';")
+      Consolidado<<-subset(Consolidado,TRUE)
     dbWriteTable(
       DB,
       "consolidado",
