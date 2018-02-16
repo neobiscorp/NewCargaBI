@@ -100,6 +100,17 @@ shinyUI(fluidPage(
                      '.csv')
         )
       ),
+      conditionalPanel(
+        condition = "input.Client =='Informe Gestion Impresion'||input.Client =='Informe Gestion Telefonia'||input.Client =='tester'",
+        fileInput(
+          'facturacion',
+          'Elegir los Archivos CSV que contenga las facturaciones sin NC',
+          multiple = T,
+          accept = c('text/csv',
+                     'text/comma-separated-values,text/plain',
+                     '.csv')
+        )
+      ),
       #Create conditional Panel accepting multiple csv files
       conditionalPanel(
         condition = "input.Client == 'Licitacion Movil (Entel y Movistar)'||input.Client =='Anomalias de Facturacion Movil'||input.Client =='tester'",
@@ -122,6 +133,14 @@ shinyUI(fluidPage(
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
           )
         )
+      ),
+      fileInput(
+        'historico',
+        'Elegir los Archivos MNG historico',
+        multiple = T,
+        accept = c('text/csv',
+                   'text/comma-separated-values,text/plain',
+                   '.csv')
       ),
       #Create conditional Panel accepting one xlsx file
       conditionalPanel(

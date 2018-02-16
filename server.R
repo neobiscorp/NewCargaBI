@@ -59,8 +59,10 @@ shinyServer(function(input, output, session) {
     client <- input$Client
     export <- input$Export
     plantilla <- input$plantilla
+    historico <- input$historico
     tipos <- input$tipos
     presupuesto <- input$presupuesto
+    facturacion <- input$facturacion
     cuentas <- input$cuentas
     contrato <- input$contrato
     proveedor <-input$proveedor
@@ -596,7 +598,24 @@ uso<<-uso
             
             CUSTOM<<-CUSTOM
           }
+        }
+        if(client == "test"){
+          if(customfield == "Si"){
+            if(nombre == "Parque Arauco"){
+              write.table(ACCESSES, file = "ACCESSES.txt", fileEncoding = "UTF-8")
+              ACCESSES2 <-
+                read.table(file = "ACCESSES.txt", encoding = "UTF-8")
+              
+              CUSTOM <- subset(ACCESSES2,select = c("ACCESS.NUMBER",
+                                                    "CUSTOM_ORG.Tipo.de.Servicio.3"))
+              
+              names(CUSTOM)<-c("Acceso",
+                               "Tipo de Servicio")
+              
+              CUSTOM<<-CUSTOM
+            }
           }
+        }
         a<-as.Date(ACCESSES$ELIGIBILITY.DATE, origin="1899-12-30")
         ACCESSES[,'Fecha Renovación']<-as.Date(ACCESSES$ELIGIBILITY.DATE, origin="1899-12-30")
         ACCESSES <-
@@ -687,33 +706,7 @@ uso<<-uso
           a<-data.frame("Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco")
           MNG<-data.frame(rbind(as.matrix(MNG),as.matrix(a)))
           MNG<<-MNG
-          dbWriteTable(
-            DB,
-            "accesses",
-            ACCESSES,
-            field.types = list(
-              Acceso = "varchar(255)",
-              Proveedor = "varchar(255)",
-              Estado = "varchar(255)",
-              `Fecha Renovación` = "date",
-              Tipo = "varchar(255)",
-              `Proveedor Nivel 2` = "varchar(255)",
-              `Proveedor Nivel 3` = "varchar(255)",
-              `MANAGEMENTORG1` = "varchar(255)",
-              `MANAGEMENTORG2` = "varchar(255)",
-              `MANAGEMENTORG3` = "varchar(255)",
-              `MANAGEMENTORG4` = "varchar(255)",
-              `MANAGEMENTORG5` = "varchar(255)",
-              `MANAGEMENTORG6` = "varchar(255)",
-              `MANAGEMENTORG7` = "varchar(255)",
-              `MANAGEMENTORG8` = "varchar(255)",
-              `Acceso fix` = "varchar(255)"
-            ) ,
-            row.names = FALSE,
-            overwrite = TRUE,
-            append = FALSE,
-            allow.keywords = FALSE
-          )
+          
         }
         else if(is.null(ACCESSES[["MANAGEMENTORG7"]])==FALSE&
                 is.null(ACCESSES[["MANAGEMENTORG6"]])==FALSE&
@@ -738,32 +731,8 @@ uso<<-uso
           a<-data.frame("Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco")
           MNG<-data.frame(rbind(as.matrix(MNG),as.matrix(a)))
           MNG<<-MNG
-          dbWriteTable(
-            DB,
-            "accesses",
-            ACCESSES,
-            field.types = list(
-              Acceso = "varchar(255)",
-              Proveedor = "varchar(255)",
-              Estado = "varchar(255)",
-              `Fecha Renovación` = "date",
-              Tipo = "varchar(255)",
-              `Proveedor Nivel 2` = "varchar(255)",
-              `Proveedor Nivel 3` = "varchar(255)",
-              `MANAGEMENTORG1` = "varchar(255)",
-              `MANAGEMENTORG2` = "varchar(255)",
-              `MANAGEMENTORG3` = "varchar(255)",
-              `MANAGEMENTORG4` = "varchar(255)",
-              `MANAGEMENTORG5` = "varchar(255)",
-              `MANAGEMENTORG6` = "varchar(255)",
-              `MANAGEMENTORG7` = "varchar(255)",
-              `Acceso fix` = "varchar(255)"
-            ) ,
-            row.names = FALSE,
-            overwrite = TRUE,
-            append = FALSE,
-            allow.keywords = FALSE
-          )
+          ACCESSES[["MANAGEMENTORG8"]]<-NA
+          
         }
         else if(is.null(ACCESSES[["MANAGEMENTORG6"]])==FALSE&
                 is.null(ACCESSES[["MANAGEMENTORG5"]])==FALSE&
@@ -786,31 +755,9 @@ uso<<-uso
           a<-data.frame("Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco")
           MNG<-data.frame(rbind(as.matrix(MNG),as.matrix(a)))
           MNG<<-MNG
-          dbWriteTable(
-            DB,
-            "accesses",
-            ACCESSES,
-            field.types = list(
-              Acceso = "varchar(255)",
-              Proveedor = "varchar(255)",
-              Estado = "varchar(255)",
-              `Fecha Renovación` = "date",
-              Tipo = "varchar(255)",
-              `Proveedor Nivel 2` = "varchar(255)",
-              `Proveedor Nivel 3` = "varchar(255)",
-              `MANAGEMENTORG1` = "varchar(255)",
-              `MANAGEMENTORG2` = "varchar(255)",
-              `MANAGEMENTORG3` = "varchar(255)",
-              `MANAGEMENTORG4` = "varchar(255)",
-              `MANAGEMENTORG5` = "varchar(255)",
-              `MANAGEMENTORG6` = "varchar(255)",
-              `Acceso fix` = "varchar(255)"
-            ) ,
-            row.names = FALSE,
-            overwrite = TRUE,
-            append = FALSE,
-            allow.keywords = FALSE
-          )
+          ACCESSES[["MANAGEMENTORG7"]]<-NA
+          ACCESSES[["MANAGEMENTORG8"]]<-NA
+          
         }
         else if(is.null(ACCESSES[["MANAGEMENTORG5"]])==FALSE&
                 is.null(ACCESSES[["MANAGEMENTORG4"]])==FALSE&
@@ -831,30 +778,10 @@ uso<<-uso
           a<-data.frame("Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco")
           MNG<-data.frame(rbind(as.matrix(MNG),as.matrix(a)))
           MNG<<-MNG
-          dbWriteTable(
-            DB,
-            "accesses",
-            ACCESSES,
-            field.types = list(
-              Acceso = "varchar(255)",
-              Proveedor = "varchar(255)",
-              Estado = "varchar(255)",
-              `Fecha Renovación` = "date",
-              Tipo = "varchar(255)",
-              `Proveedor Nivel 2` = "varchar(255)",
-              `Proveedor Nivel 3` = "varchar(255)",
-              `MANAGEMENTORG1` = "varchar(255)",
-              `MANAGEMENTORG2` = "varchar(255)",
-              `MANAGEMENTORG3` = "varchar(255)",
-              `MANAGEMENTORG4` = "varchar(255)",
-              `MANAGEMENTORG5` = "varchar(255)",
-              `Acceso fix` = "varchar(255)"
-            ) ,
-            row.names = FALSE,
-            overwrite = TRUE,
-            append = FALSE,
-            allow.keywords = FALSE
-          )
+          ACCESSES[["MANAGEMENTORG6"]]<-NA
+          ACCESSES[["MANAGEMENTORG7"]]<-NA
+          ACCESSES[["MANAGEMENTORG8"]]<-NA
+          
         }
         else if(is.null(ACCESSES[["MANAGEMENTORG4"]])==FALSE&
                 is.null(ACCESSES[["MANAGEMENTORG3"]])==FALSE&
@@ -873,29 +800,11 @@ uso<<-uso
           a<-data.frame("Sin Ceco","Sin Ceco","Sin Ceco","Sin Ceco")
           MNG<-data.frame(rbind(as.matrix(MNG),as.matrix(a)))
           MNG<<-MNG
-          dbWriteTable(
-            DB,
-            "accesses",
-            ACCESSES,
-            field.types = list(
-              Acceso = "varchar(255)",
-              Proveedor = "varchar(255)",
-              Estado = "varchar(255)",
-              `Fecha Renovación` = "date",
-              Tipo = "varchar(255)",
-              `Proveedor Nivel 2` = "varchar(255)",
-              `Proveedor Nivel 3` = "varchar(255)",
-              `MANAGEMENTORG1` = "varchar(255)",
-              `MANAGEMENTORG2` = "varchar(255)",
-              `MANAGEMENTORG3` = "varchar(255)",
-              `MANAGEMENTORG4` = "varchar(255)",
-              `Acceso fix` = "varchar(255)"
-            ) ,
-            row.names = FALSE,
-            overwrite = TRUE,
-            append = FALSE,
-            allow.keywords = FALSE
-          )
+          ACCESSES[["MANAGEMENTORG5"]]<-NA
+          ACCESSES[["MANAGEMENTORG6"]]<-NA
+          ACCESSES[["MANAGEMENTORG7"]]<-NA
+          ACCESSES[["MANAGEMENTORG8"]]<-NA
+          
         }
         else if(is.null(ACCESSES[["MANAGEMENTORG3"]])==FALSE&
                 is.null(ACCESSES[["MANAGEMENTORG2"]])==FALSE&
@@ -912,28 +821,12 @@ uso<<-uso
           a<-data.frame("Sin Ceco","Sin Ceco","Sin Ceco")
           MNG<-data.frame(rbind(as.matrix(MNG),as.matrix(a)))
           MNG<<-MNG
-          dbWriteTable(
-            DB,
-            "accesses",
-            ACCESSES,
-            field.types = list(
-              Acceso = "varchar(255)",
-              Proveedor = "varchar(255)",
-              Estado = "varchar(255)",
-              `Fecha Renovación` = "date",
-              Tipo = "varchar(255)",
-              `Proveedor Nivel 2` = "varchar(255)",
-              `Proveedor Nivel 3` = "varchar(255)",
-              `MANAGEMENTORG1` = "varchar(255)",
-              `MANAGEMENTORG2` = "varchar(255)",
-              `MANAGEMENTORG3` = "varchar(255)",
-              `Acceso fix` = "varchar(255)"
-            ) ,
-            row.names = FALSE,
-            overwrite = TRUE,
-            append = FALSE,
-            allow.keywords = FALSE
-          )
+          ACCESSES[["MANAGEMENTORG4"]]<-NA
+          ACCESSES[["MANAGEMENTORG5"]]<-NA
+          ACCESSES[["MANAGEMENTORG6"]]<-NA
+          ACCESSES[["MANAGEMENTORG7"]]<-NA
+          ACCESSES[["MANAGEMENTORG8"]]<-NA
+          
         }
         else if(is.null(ACCESSES[["MANAGEMENTORG2"]])==FALSE&
                 is.null(ACCESSES[["MANAGEMENTORG1"]])==FALSE)
@@ -948,27 +841,13 @@ uso<<-uso
           a<-data.frame("Sin Ceco","Sin Ceco")
           MNG<-data.frame(rbind(as.matrix(MNG),as.matrix(a)))
           MNG<<-MNG
-          dbWriteTable(
-            DB,
-            "accesses",
-            ACCESSES,
-            field.types = list(
-              Acceso = "varchar(255)",
-              Proveedor = "varchar(255)",
-              Estado = "varchar(255)",
-              `Fecha Renovación` = "date",
-              Tipo = "varchar(255)",
-              `Proveedor Nivel 2` = "varchar(255)",
-              `Proveedor Nivel 3` = "varchar(255)",
-              `MANAGEMENTORG1` = "varchar(255)",
-              `MANAGEMENTORG2` = "varchar(255)",
-              `Acceso fix` = "varchar(255)"
-            ) ,
-            row.names = FALSE,
-            overwrite = TRUE,
-            append = FALSE,
-            allow.keywords = FALSE
-          )
+          ACCESSES[["MANAGEMENTORG3"]]<-NA
+          ACCESSES[["MANAGEMENTORG4"]]<-NA
+          ACCESSES[["MANAGEMENTORG5"]]<-NA
+          ACCESSES[["MANAGEMENTORG6"]]<-NA
+          ACCESSES[["MANAGEMENTORG7"]]<-NA
+          ACCESSES[["MANAGEMENTORG8"]]<-NA
+          
         }
         else if(is.null(ACCESSES[["MANAGEMENTORG1"]])==FALSE)
         {
@@ -981,50 +860,54 @@ uso<<-uso
           a<-data.frame("Sin Ceco")
           MNG<-data.frame(rbind(as.matrix(MNG),as.matrix(a)))
           MNG<<-MNG
-          dbWriteTable(
-            DB,
-            "accesses",
-            ACCESSES,
-            field.types = list(
-              Acceso = "varchar(255)",
-              Proveedor = "varchar(255)",
-              Estado = "varchar(255)",
-              `Fecha Renovación` = "date",
-              Tipo = "varchar(255)",
-              `Proveedor Nivel 2` = "varchar(255)",
-              `Proveedor Nivel 3` = "varchar(255)",
-              `MANAGEMENTORG1` = "varchar(255)",
-              `Acceso fix` = "varchar(255)"
-            ) ,
-            row.names = FALSE,
-            overwrite = TRUE,
-            append = FALSE,
-            allow.keywords = FALSE
-          )
+          ACCESSES[["MANAGEMENTORG2"]]<-NA
+          ACCESSES[["MANAGEMENTORG3"]]<-NA
+          ACCESSES[["MANAGEMENTORG4"]]<-NA
+          ACCESSES[["MANAGEMENTORG5"]]<-NA
+          ACCESSES[["MANAGEMENTORG6"]]<-NA
+          ACCESSES[["MANAGEMENTORG7"]]<-NA
+          ACCESSES[["MANAGEMENTORG8"]]<-NA
+          
         }
         else 
         {
-          dbWriteTable(
-            DB,
-            "accesses",
-            ACCESSES,
-            field.types = list(
-              Acceso = "varchar(255)",
-              Proveedor = "varchar(255)",
-              Estado = "varchar(255)",
-              `Fecha Renovación` = "date",
-              Tipo = "varchar(255)",
-              `Proveedor Nivel 2` = "varchar(255)",
-              `Proveedor Nivel 3` = "varchar(255)",
-              `Acceso fix` = "varchar(255)"
-            ) ,
-            row.names = FALSE,
-            overwrite = TRUE,
-            append = FALSE,
-            allow.keywords = FALSE
-          )
+          ACCESSES[["MANAGEMENTORG1"]]<-NA
+          ACCESSES[["MANAGEMENTORG2"]]<-NA
+          ACCESSES[["MANAGEMENTORG3"]]<-NA
+          ACCESSES[["MANAGEMENTORG4"]]<-NA
+          ACCESSES[["MANAGEMENTORG5"]]<-NA
+          ACCESSES[["MANAGEMENTORG6"]]<-NA
+          ACCESSES[["MANAGEMENTORG7"]]<-NA
+          ACCESSES[["MANAGEMENTORG8"]]<-NA
+          
         }
-        
+        dbWriteTable(
+          DB,
+          "accesses",
+          ACCESSES,
+          field.types = list(
+            Acceso = "varchar(255)",
+            Proveedor = "varchar(255)",
+            Estado = "varchar(255)",
+            `Fecha Renovación` = "date",
+            Tipo = "varchar(255)",
+            `Proveedor Nivel 2` = "varchar(255)",
+            `Proveedor Nivel 3` = "varchar(255)",
+            `MANAGEMENTORG1` = "varchar(255)",
+            `MANAGEMENTORG2` = "varchar(255)",
+            `MANAGEMENTORG3` = "varchar(255)",
+            `MANAGEMENTORG4` = "varchar(255)",
+            `MANAGEMENTORG5` = "varchar(255)",
+            `MANAGEMENTORG6` = "varchar(255)",
+            `MANAGEMENTORG7` = "varchar(255)",
+            `MANAGEMENTORG8` = "varchar(255)",
+            `Acceso fix` = "varchar(255)"
+          ) ,
+          row.names = FALSE,
+          overwrite = TRUE,
+          append = FALSE,
+          allow.keywords = FALSE
+        )
         ACCESSES <<- ACCESSES
         
       }
@@ -1260,6 +1143,106 @@ uso<<-uso
         allow.keywords = FALSE
       )
     }
+    #Run the following code if theres a file in the presupuesto file input
+    if (!is.null(facturacion)){
+      dbGetQuery(DB, "SET NAMES 'latin1';")
+      dataFilesUF3 <- NULL
+      dataFilesUF3 <- lapply(input$facturacion[['datapath']], function(x) read.csv2(x,encoding = "UTF-8",check.names = FALSE,header = TRUE))
+      
+      #Append all usos files to the same dataframe
+      
+      facturaciones <- rbindlist(dataFilesUF3,fill = TRUE)
+      
+      
+      a<-as.character(names(facturaciones))
+      d<-matrix(nrow = length(a),ncol = 1)
+      for(i in 1:length(a)){
+        c<-substr((a[i]),3,10)
+        if(c=="cceso"){
+          print("Encontrado")
+          d[i,1]<-"Acceso"
+        }
+        else if (c=="ombre"){
+          print("Encontrado 2")
+          d[i,1]<-"Nombre"
+        }
+        else{
+          d[i,1]<-a[i]
+        }
+      }
+      b<-as.character(d)
+      colnames(facturaciones)<-b
+      
+      rm(a,b,c,d)
+      facturaciones<<-facturaciones
+      if (client=="igm"){
+        CF<-subset(facturaciones,is.na(facturaciones[["Acceso"]]))
+        facturaciones1<-subset(facturaciones,!is.na(facturaciones[["Acceso"]]))
+        if(length(CF[["Acceso"]])>0){
+          CF[["Acceso"]]<-CF[["Nombre"]]
+          CF[["Centro de facturación"]]<-CF[["Nombre"]]
+          CF[["Tipo"]]<-"Centro de facturación"
+          facturaciones<-rbind(CF,facturaciones1)
+        }
+        facturaciones[["Nombre"]]<-NULL
+        rm(CF,facturaciones1)
+        
+        facturaciones<<-facturaciones
+      }
+      if(divisa == "CLP"){
+        names(facturaciones)[names(facturaciones) == 'Total (CLP)'] <- 'Total'
+        names(facturaciones)[names(facturaciones) == 'Plano tarifario (CLP)'] <- 'Plano tarifario'
+        names(facturaciones)[names(facturaciones) == 'Descuentos (CLP)'] <- 'Descuentos'
+        
+      }
+      else if (divisa == "UF"){
+        names(facturaciones)[names(facturaciones) == 'Total (UF)'] <- 'Total'
+        names(facturaciones)[names(facturaciones) == 'Plano tarifario (UF)'] <- 'Plano tarifario'
+        names(facturaciones)[names(facturaciones) == 'Descuentos (UF)'] <- 'Descuentos'
+        
+      }
+      facturaciones<<-facturaciones
+      
+      
+      for (k in 1:12) {
+        facturaciones[, 'Período de'] <-
+          lapply(facturaciones[, 'Período de'], function(x)
+            gsub(names(y[k]), y[[k]], x))
+      }
+      {
+        facturaciones[, 'Fecha'] <-
+          lapply(facturaciones[, 'Período de'], function(x)
+            paste(substr(x , 3 , 6),
+                  substr(x , 1 , 2),
+                  "01",
+                  sep = "/"))
+        #Delete the Column MES that its not needed now
+        facturaciones[, 'Período de'] <- NULL
+        facturaciones<-subset(facturaciones,select = c("Acceso",
+                                                     "Tipo",
+                                                     "Usuario ID",
+                                                     "Centro de facturación",
+                                                     "Proveedor",
+                                                     "Total",
+                                                     "Descuentos",
+                                                     "Plano tarifario",
+                                                     "Fecha"))
+        facturaciones<<-facturaciones
+        
+        
+      }
+      
+      dbWriteTable(
+        DB,
+        "facturacion",
+        facturaciones,
+        field.types = NULL,
+        row.names = FALSE,
+        overwrite = TRUE,
+        append = FALSE,
+        allow.keywords = FALSE
+      )
+    }
     #Run the following code if theres a file in the planes file input
     if (!is.null(plantilla)) {
       #if xlsx file then Set names latin1 else if csv2 then Set names utf8
@@ -1307,6 +1290,67 @@ uso<<-uso
         )
         file.remove("Plantilla.txt")
     }
+    #Run the following code if theres a file in the MNG historicos files input
+    if (!is.null(historico)) {
+      dbGetQuery(DB, "SET NAMES 'utf8';")
+      dataFilesUF2 <<- NULL
+      #dataFilesUF <<- lapply(input$usos[['datapath']], read.csv2)
+      
+      #CAMBIO PENDIENTE, EN CONJUNTO CAMBIAR LA LECTURA DE TITULOS EN TODOS LOS IF DE ADELANTE EN CONSECUENCIA
+      dataFilesUF2 <<- lapply(input$historico[['datapath']], function(x) read.csv2(x,encoding = "UTF-8",check.names = FALSE,header = TRUE))
+      #Append all usos files to the same dataframe
+      
+      mngh <<- rbindlist(dataFilesUF2,fill = TRUE)
+      #uso <<- rbindlist(dataFilesUF)
+      
+      a<-as.character(names(mngh))
+      d<-matrix(nrow = length(a),ncol = 1)
+      for(i in 1:length(a)){
+        c<-substr((a[i]),3,10)
+        if(c=="cceso"){
+          print("Encontrado")
+          d[i,1]<-"Acceso"
+        }
+        else if (c=="ombre"){
+          print("Encontrado 2")
+          d[i,1]<-"Nombre"
+        }
+        else{
+          d[i,1]<-a[i]
+        }
+      }
+      b<-as.character(d)
+      colnames(mngh)<-b
+      
+      rm(a,b,c,d)
+      mngh<<-mngh
+      
+      mngh[["Período de2"]]<-mngh[["Período de"]]
+      
+      #Convert the ITEM months to YYYY/MM/01"
+      for (k in 1:12) {
+        mngh[, 'Período de2']<-
+          lapply(mngh[, 'Período de2'], function(x)
+            gsub(names(y[k]), y[[k]], x))
+      }
+      
+      mngh[, 'Fecha'] <-
+        lapply(mngh[, 'Período de2'], function(x)
+          paste(substr(x , 3 , 6),
+                substr(x , 1 , 2),
+                "01",
+                sep = "/"))
+      mngh[["Período de2"]]<-NULL
+      
+      mngh[,'Acceso fix'] <-
+        lapply(mngh[,'Acceso'], function(x)
+          substring(x, 3))
+      mngh[["Fecha"]]<- as.Date(mngh[["Fecha"]])
+      mngh_opc<-subset(mngh,mnh[["Tipo de producto"]] == "Option")
+      mngh_opc<<-mngh_opc
+      mngh<-subset(mngh,mngh[["Tipo de producto"]] == "Plano tarifario")
+      mngh<<-mngh
+      }
     #Run the following code if theres a file in the nombre and link text input
     if (!is.null(input$nombre)) {
       #Set variable names
@@ -1628,6 +1672,8 @@ uso<<-uso
     
     
     ##################################CAMBIOS SOBRE TABLAS###################
+    Consolidado<-NULL
+    print("Consolidado es NULL")
     ##################################CAMBIOS A USOS#########################
     if(!is.null(input$usos)){
     month1 <- sapply(uso[,'Fecha'], substr, 6, 7)
@@ -1855,15 +1901,16 @@ uso<<-uso
         ACCESSES2[["Tipo"]]<-NULL
         ACCESSES2[["Proveedor"]]<-NULL
         ACCESSES2[["Acceso fix"]]<-NULL
-        ACCESSES2[["MANAGEMENTORG1"]]<-NULL
-        ACCESSES2[["MANAGEMENTORG2"]]<-NULL
-        ACCESSES2[["MANAGEMENTORG3"]]<-NULL
-        ACCESSES2[["MANAGEMENTORG4"]]<-NULL
-        ACCESSES2[["MANAGEMENTORG5"]]<-NULL
-        ACCESSES2[["MANAGEMENTORG6"]]<-NULL
-        ACCESSES2[["MANAGEMENTORG7"]]<-NULL
-        ACCESSES2[["MANAGEMENTORG8"]]<-NULL
+        
         if(CantMNG>=8){
+          ACCESSES2[["MANAGEMENTORG1"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG2"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG3"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG4"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG5"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG6"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG7"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG8"]]<-NULL
           print("Search by MNG lvl 8")
           if(length(uso[["Acceso"]])>0){
           uso<-merge(uso,MNG,by.x = "Usuario ID",by.y = "MANAGEMENTORG8",all.x = TRUE)
@@ -1881,6 +1928,13 @@ uso<<-uso
           }
         }
         if(CantMNG>=7){
+          ACCESSES2[["MANAGEMENTORG1"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG2"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG3"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG4"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG5"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG6"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG7"]]<-NULL
           print("Search by MNG lvl 7")
           if(length(uso[["Acceso"]])>0){
             uso<-merge(uso,MNG,by.x = "Usuario ID",by.y = "MANAGEMENTORG7",all.x = TRUE)
@@ -1898,6 +1952,12 @@ uso<<-uso
           }
         }
         if(CantMNG>=6){
+          ACCESSES2[["MANAGEMENTORG1"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG2"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG3"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG4"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG5"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG6"]]<-NULL
           print("Search by MNG lvl 6")
           if(length(uso[["Acceso"]])>0){
             uso<-merge(uso,MNG,by.x = "Usuario ID",by.y = "MANAGEMENTORG6",all.x = TRUE)
@@ -1915,6 +1975,11 @@ uso<<-uso
           }
         }
         if(CantMNG>=5){
+          ACCESSES2[["MANAGEMENTORG1"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG2"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG3"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG4"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG5"]]<-NULL
           print("Search by MNG lvl 5")
           if(length(uso[["Acceso"]])>0){
             uso<-merge(uso,MNG,by.x = "Usuario ID",by.y = "MANAGEMENTORG5",all.x = TRUE)
@@ -1932,6 +1997,10 @@ uso<<-uso
           }
         }
         if(CantMNG>=4){
+          ACCESSES2[["MANAGEMENTORG1"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG2"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG3"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG4"]]<-NULL
           print("Search by MNG lvl 4")
           if(length(uso[["Acceso"]])>0){
             uso<-merge(uso,MNG,by.x = "Usuario ID",by.y = "MANAGEMENTORG4",all.x = TRUE)
@@ -1949,6 +2018,9 @@ uso<<-uso
           }
         }
         if(CantMNG>=3){
+          ACCESSES2[["MANAGEMENTORG1"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG2"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG3"]]<-NULL
           print("Search by MNG lvl 3")
           if(length(uso[["Acceso"]])>0){
             uso<-merge(uso,MNG,by.x = "Usuario ID",by.y = "MANAGEMENTORG3",all.x = TRUE)
@@ -1966,6 +2038,8 @@ uso<<-uso
           }
         }
         if(CantMNG>=2){
+          ACCESSES2[["MANAGEMENTORG1"]]<-NULL
+          ACCESSES2[["MANAGEMENTORG2"]]<-NULL
           print("Search by MNG lvl 2")
           if(length(uso[["Acceso"]])>0){
             uso<-merge(uso,MNG,by.x = "Usuario ID",by.y = "MANAGEMENTORG2",all.x = TRUE)
@@ -1983,6 +2057,7 @@ uso<<-uso
           }
         }
         if(CantMNG>=1){
+          ACCESSES2[["MANAGEMENTORG1"]]<-NULL
           print("Search by MNG lvl 1")
           if(length(uso[["Acceso"]])>0){
             uso<-merge(uso,MNG,by.x = "Usuario ID",by.y = "MANAGEMENTORG1",all.x = TRUE)
@@ -2036,12 +2111,8 @@ uso<<-uso
         ACCESSES2[["Acceso fix"]]<-NULL
         
         Consolidado1<-merge(uso,ACCESSES2,by = "Acceso",all.x = TRUE)
-        Consolidado<<-Consolidado1
+        Consolidado<-Consolidado1
         print("Consolidado contiene la union de Usos y ACCESSES por acceso")
-      }
-      else{
-        Consolidado<-NULL
-        print("Consolidado es NULL")
       }
     }
     }
@@ -2064,7 +2135,7 @@ uso<<-uso
         PLAN2<<-PLAN2
         Consolidado<- merge(Consolidado,PLAN2,by.x ="Acceso",by.y = "Acceso", all.x = TRUE)
         print("Consolidado se le une los productos de servicios facturados")
-        Consolidado[,'Descuento > Otros'] <- Consolidado[,'Descuentos'] - Consolidado[,'Descuento > Plano tarifario']
+        
         SinUsos<-Consolidado
         SinUsos<-subset(SinUsos,SinUsos[["Tipo"]]!="Centro de facturación")
         SinUsos<<-SinUsos
@@ -2638,6 +2709,12 @@ uso<<-uso
             allow.keywords = FALSE
           )
         }
+      }
+    }
+    #######################################TEST############
+    if(client=="test"){
+      if(customfield=="Si"){
+        Consolidado<-merge(Consolidado,CUSTOM,by.x= "Acceso", by.y="Acceso",all.x = TRUE)
       }
     }
     ####################UPLOAD CONSOLIDADO############
