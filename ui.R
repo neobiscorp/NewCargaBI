@@ -134,14 +134,14 @@ shinyUI(fluidPage(
           )
         )
       ),
-      fileInput(
-        'historico',
-        'Elegir los Archivos MNG historico',
-        multiple = T,
-        accept = c('text/csv',
-                   'text/comma-separated-values,text/plain',
-                   '.csv')
-      ),
+      # fileInput(
+      #   'historico',
+      #   'Elegir los Archivos MNG historico',
+      #   multiple = T,
+      #   accept = c('text/csv',
+      #              'text/comma-separated-values,text/plain',
+      #              '.csv')
+      # ),
       #Create conditional Panel accepting one xlsx file
       conditionalPanel(
         condition = "input.Client == 'Licitacion Movil (Entel y Movistar)'||input.Client =='tester'",
