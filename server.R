@@ -1373,6 +1373,9 @@ uso<<-uso
       else if (nombre =="Hogar de Cristo"){
         link<<-"https://cdn.pbrd.co/images/H1pXkPQO.png"
       }
+      else if (nombre =="Hortifrut"){
+        link<<-"https://cdn.pbrd.co/images/H3oxeYy.png"
+      }
       else if (nombre =="Nuevo Pudahuel"){
         link<<-"https://cdn.pbrd.co/images/GWEvad0.png"
       }
@@ -2109,7 +2112,7 @@ uso<<-uso
         ACCESSES2[["Tipo"]]<-NULL
         ACCESSES2[["Proveedor"]]<-NULL
         ACCESSES2[["Acceso fix"]]<-NULL
-        
+        ACCESSES2[["Acceso"]]<-as.integer(ACCESSES2[["Acceso"]])
         Consolidado1<-merge(uso,ACCESSES2,by = "Acceso",all.x = TRUE)
         Consolidado<-Consolidado1
         print("Consolidado contiene la union de Usos y ACCESSES por acceso")

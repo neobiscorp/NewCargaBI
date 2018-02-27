@@ -37,6 +37,7 @@ shinyUI(fluidPage(
           "Copec",
           "Enap",
           "Hogar de Cristo",
+          "Hortifrut",
           "Nueva Pudahuel",
           "Parque Arauco",
           "Rhona",
