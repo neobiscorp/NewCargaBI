@@ -681,6 +681,7 @@ uso<<-uso
           lapply(ACCESSES['Acceso'], function(x)
             substring(x, 3))
         ACCESSES<<-ACCESSES
+        
         if(is.null(ACCESSES[["MANAGEMENTORG8"]])==FALSE&
            is.null(ACCESSES[["MANAGEMENTORG7"]])==FALSE&
            is.null(ACCESSES[["MANAGEMENTORG6"]])==FALSE&
@@ -1702,7 +1703,15 @@ uso<<-uso
       uso1<-subset(uso,uso[["Meses"]]== i)
       
       uso1[,'Porcentaje']<-uso1[,'Total']/sum(uso1[["Total"]])
-      
+      if(client == "igm"){
+        uso1[,'V% Plano tarifario rebajado']<-(uso1[,'Plano tarifario']+uso1[,'Descuento > Plano tarifario'])/sum(uso1[["Total"]])
+        uso1[,'V% Servicios']<-uso1[,'Servicios']/sum(uso1[["Total"]])
+        uso1[,'V% Descuentos Efectivos']<-(uso1[,'Descuentos']-uso1[,'Descuento > Plano tarifario'])/sum(uso1[["Total"]])
+        uso1[,'V% Servicios']<-uso1[,'Servicios']/sum(uso1[["Total"]])
+        uso1[,'V% Voz']<-uso1[,'Voz']/sum(uso1[["Total"]])
+        uso1[,'V% Datos']<-uso1[,'Datos']/sum(uso1[["Total"]])
+        uso1[,'V% SMS/MMS']<-uso1[,'SMS/MMS']/sum(uso1[["Total"]])
+      }
       
       uso2<-rbind(uso2,uso1)
     }
@@ -2112,7 +2121,8 @@ uso<<-uso
         ACCESSES2[["Tipo"]]<-NULL
         ACCESSES2[["Proveedor"]]<-NULL
         ACCESSES2[["Acceso fix"]]<-NULL
-        ACCESSES2[["Acceso"]]<-as.integer(ACCESSES2[["Acceso"]])
+        uso[["Acceso"]]<-as.character(uso[["Acceso"]])
+        ACCESSES2[["Acceso"]]<-as.character(ACCESSES2[["Acceso"]])
         Consolidado1<-merge(uso,ACCESSES2,by = "Acceso",all.x = TRUE)
         Consolidado<-Consolidado1
         print("Consolidado contiene la union de Usos y ACCESSES por acceso")
