@@ -409,6 +409,7 @@ shinyServer(function(input, output, session) {
                     "Datos nac. (KB)",
                     "Datos inter. (KB)",
                     "N.° SMS/MMS",
+                    "N.° Voz",
                     "Fecha",
                     "Acceso fix"))
         }
@@ -2153,8 +2154,12 @@ uso<<-uso
         SinUsos<-subset(SinUsos,SinUsos[["Tipo"]]!="Centro de facturación")
         SinUsos<<-SinUsos
         
+        SinUsos[,'Voz (sec)']<-as.numeric(as.character(SinUsos[["Voz (sec)"]]))
+        SinUsos[,'Datos (KB)']<-as.numeric(as.character(SinUsos[["Datos (KB)"]]))
+        SinUsos[,'N.° SMS/MMS']<-as.numeric(as.character(SinUsos[["N.° SMS/MMS"]]))
+        SinUsos[,'N.° Voz']<-as.numeric(as.character(SinUsos[["N.° Voz"]]))
         
-        SinUsos[,'usocant']<-SinUsos[,'Voz (sec)']+SinUsos[,'Datos (KB)']+SinUsos[,'N.° SMS/MMS']
+        SinUsos[,'usocant']<-SinUsos[,'Voz (sec)']+SinUsos[,'Datos (KB)']+SinUsos[,'N.° SMS/MMS']+SinUsos[,'N.° Voz']
         SinUsos <-
           subset(
             SinUsos,
@@ -2240,6 +2245,7 @@ uso<<-uso
     }
     #################################ANOMALIAS DE FACTURACION MOVIL########
     if (client == "afm"){
+      
       if(!is.null(input$usos) & !is.null(input$factura) & !is.null(input$cdr) & !is.null(plantilla) & !is.null(contrato)){
         {
           cdr2<<-subset(cdr,
@@ -2251,12 +2257,12 @@ uso<<-uso
           #source("pj_afm.r", local = TRUE)
           {
             ################Consolidado############
-            break
+            
             SFPlanes_final<-SFPlanes_final
             Fact<<-merge(uso,
                          SFPlanes_final,
                          by = c("Acceso",
-                                "Centro de facturacion"),
+                                "Centro de facturación"),
                          all.x = TRUE)
             facturas2<-facturas
             facturas2[,'Proveedor']<-NULL
@@ -2264,10 +2270,10 @@ uso<<-uso
             facturas2[,'Total imp. incluidos']<-NULL
             facturas2[,'Importe IVA']<-NULL
             facturas2[,'Divisa']<-NULL
-            facturas2[,'N. accesos facturados']<-NULL
+            facturas2[,'N.° accesos facturados']<-NULL
             facturas2[,'Fecha']<-NULL
             facturas2<<-facturas2
-            Fact<<-merge(Fact,facturas2,by = "Centro de facturacion", all.x = TRUE)
+            Fact<<-merge(Fact,facturas2,by = "Centro de facturación", all.x = TRUE)
             Fact[["Acceso fix"]]<-NULL
             Contratoplanes<-subset(MOVISTAR_PLANES,
                                    select = c("Producto",
@@ -2282,13 +2288,14 @@ uso<<-uso
             Contratoplanes[,'Tipo Contrato']<-Contratoplanes[,'Tipo']
             Contratoplanes[["Tipo"]]<-NULL
             Consolidado<<-merge(Fact,Contratoplanes,by = "Producto",all.x = TRUE)
-            Consolidado[,'Voz nac. (min)']<-Consolidado[,'Voz nacional (seg)']/60
+            Consolidado[,'Voz nac. (min)']<-Consolidado[,'Voz nac. (sec)']/60
+            break
             ####################MIN ADICIONAL#################
             
             MIN_ADICIONAL1<<-subset(Consolidado,Consolidado[["Voz nac. (min)"]]>Consolidado[["Voz (min)"]]&Consolidado[["Voz (min)"]]>0)
             MIN_ADICIONAL1[,'Delta minutos']<-MIN_ADICIONAL1[,'Voz nac. (min)']-MIN_ADICIONAL1[,'Voz (min)']
             MIN_ADICIONAL1[,'Precio Real']<- (MIN_ADICIONAL1[,'Voz nac. (min)']-MIN_ADICIONAL1[,'Voz (min)'])*MIN_ADICIONAL1[,'PrecioSC/min (CLP)']
-            MIN_ADICIONAL1[,'Delta']<-MIN_ADICIONAL1[,'Voz nacional (CLP)']-MIN_ADICIONAL1[,'Precio Real']
+            MIN_ADICIONAL1[,'Delta']<-MIN_ADICIONAL1[,'Voz nacional']-MIN_ADICIONAL1[,'Precio Real']
             MIN_ADICIONAL2<-subset(Consolidado,Consolidado[["Voz nac. (min)"]]<Consolidado[["Voz (min)"]]&Consolidado[["Voz nacional (CLP)"]]>0&Consolidado[["PrecioSC/min (CLP)"]]>0)
             MIN_ADICIONAL2[,'Delta minutos']<-MIN_ADICIONAL2[,'Voz nac. (min)']-MIN_ADICIONAL2[,'Voz (min)']
             MIN_ADICIONAL2[,'Precio Real']<- 0
