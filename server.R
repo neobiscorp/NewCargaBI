@@ -112,6 +112,7 @@ shinyServer(function(input, output, session) {
       #Read the csv of the factura
       facturas<<-read.csv2(input$factura[['datapath']],encoding = "UTF-8",check.names = FALSE,header = TRUE)
       #Delete the Estado Column
+     
       a<-names(facturas)
       a[1]<-"Factura"
       names(facturas)<-a
@@ -180,7 +181,6 @@ shinyServer(function(input, output, session) {
       
       uso <<- rbindlist(dataFilesUF,fill = TRUE)
       #uso <<- rbindlist(dataFilesUF)
-    
       a<-as.character(names(uso))
       d<-matrix(nrow = length(a),ncol = 1)
       for(i in 1:length(a)){
@@ -364,8 +364,8 @@ shinyServer(function(input, output, session) {
         uso[["Acceso"]]<-as.character(uso[["Acceso"]])
         #Se seleccionan las columnas que requiere el informe
         if (client=="igm"){
-          CF<-subset(uso,is.na(uso[["Acceso"]]))
-          uso1<-subset(uso,!is.na(uso[["Acceso"]]))
+            CF<-subset(uso,is.na(uso[["Acceso"]]))
+            uso1<-subset(uso,!is.na(uso[["Acceso"]]))
           if(length(CF[["Acceso"]])>0){
             CF[["Acceso"]]<-CF[["Nombre"]]
             CF[["Acceso fix"]]<-CF[["Nombre"]]
@@ -377,6 +377,7 @@ shinyServer(function(input, output, session) {
           rm(CF,uso1)
           
           uso<<-uso
+     
         uso<-subset(uso,select =c("Acceso",
                     "Proveedor",
                     "Período de",
@@ -412,6 +413,7 @@ shinyServer(function(input, output, session) {
                     "N.° Voz",
                     "Fecha",
                     "Acceso fix"))
+     
         }
         else if (client == "afm"){
           uso<-subset(uso,select = c("Acceso",
@@ -1126,6 +1128,9 @@ uso<<-uso
                                                      "Centro de facturación",
                                                      "Proveedor",
                                                      "Total",
+                                                     "N.° Copias",
+                                                     "N.° Copias B/N",
+                                                     "N.° Copias Color",
                                                      "Descuentos",
                                                      "Plano tarifario",
                                                      "Fecha"))
@@ -1447,7 +1452,7 @@ uso<<-uso
  
       dbWriteTable(
         DB,
-        "movistar_planes",
+        "proveedor_planes",
         MOVISTAR_PLANES,
         field.types = NULL ,
         row.names = FALSE,
@@ -1458,10 +1463,8 @@ uso<<-uso
       
       file.remove("MOVISTAR_PLANES.txt")
       MOVISTAR_PLANES<<-MOVISTAR_PLANES
-      
+      PROVEEDOR_PLANES<<-MOVISTAR_PLANES
       ########################################MOVISTAR_OPCIONES############
-      
-      
       MOVISTAR_OPCIONES <<- read.xlsx(contrato$datapath,
                                    sheet = "Movistar Opciones",
                                    startRow = 1,
@@ -1476,7 +1479,7 @@ uso<<-uso
       
       dbWriteTable(
         DB,
-        "movistar_opciones",
+        "proveedor_opciones",
         MOVISTAR_OPCIONES,
         field.types = NULL ,
         row.names = FALSE,
@@ -1485,6 +1488,7 @@ uso<<-uso
         allow.keywords = FALSE
       )
       file.remove("MOVISTAR_OPCIONES.txt")
+      PROVEEDOR_OPCIONES<<-MOVISTAR_OPCIONES
       ########################################MOVISTAR_PAISES############
       MOVISTAR_PAISES <<- read.xlsx(contrato$datapath,
                                      sheet = "Movistar Paises",
@@ -1498,7 +1502,7 @@ uso<<-uso
       MOVISTAR_PAISES<-fixnames(MOVISTAR_PAISES)
       dbWriteTable(
         DB,
-        "movistar_paises",
+        "proveedor_paises",
         MOVISTAR_PAISES,
         field.types = NULL ,
         row.names = FALSE,
@@ -1508,6 +1512,7 @@ uso<<-uso
       )
       file.remove("MOVISTAR_PAISES.txt")
       MOVISTAR_PAISES<<-MOVISTAR_PAISES
+      PROVEEDOR_PAISES<<-MOVISTAR_PAISES
       ########################################MOVISTAR_ZONAS############
       MOVISTAR_ZONAS <<- read.xlsx(contrato$datapath,
                                     sheet = "Movistar Zonas",
@@ -1531,6 +1536,9 @@ uso<<-uso
       )
       file.remove("MOVISTAR_ZONAS.txt")
       MOVISTAR_ZONAS<<-MOVISTAR_ZONAS
+      }
+      if (proveedor == "Entel PCS"){
+        print("Falta desarrollo")
       }
     }
     #Run the following code if theres a file in the tipos file input
@@ -1766,7 +1774,7 @@ uso<<-uso
         }
         else if (client == "afm"){
           SF_a_evaluar<- merge(SFduplicados,
-                               MOVISTAR_PLANES,
+                               PROVEEDOR_PLANES,
                                by = "Producto",
                                all.x = TRUE)
           SF_fueradecontratoSC<-subset(SF_a_evaluar,
@@ -2248,18 +2256,20 @@ uso<<-uso
       
       if(!is.null(input$usos) & !is.null(input$factura) & !is.null(input$cdr) & !is.null(plantilla) & !is.null(contrato)){
         {
-          cdr2<<-subset(cdr,
-                        (cdr[["Geografia"]]!="Nacional desconocido"
+          cdr2<-subset(cdr,
+                        (cdr[["Geografía"]]!="Nacional desconocido"
                          & cdr[["Tipo de llamada"]]!="SMS"))
-          cdr3<<-subset(cdr,
+          cdr2<<-cdr2
+          cdr3<-subset(cdr,
                         (cdr[["Servicio llamado"]]=="Números especiales" 
                          & cdr[["Tipo de llamada"]]!="SMS"))
+          cdr3<<-cdr3
           #source("pj_afm.r", local = TRUE)
           {
             ################Consolidado############
             
             SFPlanes_final<-SFPlanes_final
-            Fact<<-merge(uso,
+            Fact<-merge(uso,
                          SFPlanes_final,
                          by = c("Acceso",
                                 "Centro de facturación"),
@@ -2273,9 +2283,9 @@ uso<<-uso
             facturas2[,'N.° accesos facturados']<-NULL
             facturas2[,'Fecha']<-NULL
             facturas2<<-facturas2
-            Fact<<-merge(Fact,facturas2,by = "Centro de facturación", all.x = TRUE)
+            Fact<-merge(Fact,facturas2,by = "Centro de facturación", all.x = TRUE)
             Fact[["Acceso fix"]]<-NULL
-            Contratoplanes<-subset(MOVISTAR_PLANES,
+            Contratoplanes<-subset(PROVEEDOR_PLANES,
                                    select = c("Producto",
                                               "Tipo",
                                               "Precio (CLP)",
@@ -2287,25 +2297,28 @@ uso<<-uso
                                               "Precio/KB (CLP)"))
             Contratoplanes[,'Tipo Contrato']<-Contratoplanes[,'Tipo']
             Contratoplanes[["Tipo"]]<-NULL
-            Consolidado<<-merge(Fact,Contratoplanes,by = "Producto",all.x = TRUE)
+            Consolidado<-merge(Fact,Contratoplanes,by = "Producto",all.x = TRUE)
             Consolidado[,'Voz nac. (min)']<-Consolidado[,'Voz nac. (sec)']/60
-            break
+            Consolidado<<-Consolidado
             ####################MIN ADICIONAL#################
             
-            MIN_ADICIONAL1<<-subset(Consolidado,Consolidado[["Voz nac. (min)"]]>Consolidado[["Voz (min)"]]&Consolidado[["Voz (min)"]]>0)
+            MIN_ADICIONAL1<-subset(Consolidado,Consolidado[["Voz nac. (min)"]]>Consolidado[["Voz (min)"]]&Consolidado[["Voz (min)"]]>0)
             MIN_ADICIONAL1[,'Delta minutos']<-MIN_ADICIONAL1[,'Voz nac. (min)']-MIN_ADICIONAL1[,'Voz (min)']
             MIN_ADICIONAL1[,'Precio Real']<- (MIN_ADICIONAL1[,'Voz nac. (min)']-MIN_ADICIONAL1[,'Voz (min)'])*MIN_ADICIONAL1[,'PrecioSC/min (CLP)']
             MIN_ADICIONAL1[,'Delta']<-MIN_ADICIONAL1[,'Voz nacional']-MIN_ADICIONAL1[,'Precio Real']
-            MIN_ADICIONAL2<-subset(Consolidado,Consolidado[["Voz nac. (min)"]]<Consolidado[["Voz (min)"]]&Consolidado[["Voz nacional (CLP)"]]>0&Consolidado[["PrecioSC/min (CLP)"]]>0)
+            MIN_ADICIONAL2<-subset(Consolidado,Consolidado[["Voz nac. (min)"]]<Consolidado[["Voz (min)"]]&Consolidado[["Voz nacional"]]>0&Consolidado[["PrecioSC/min (CLP)"]]>0)
             MIN_ADICIONAL2[,'Delta minutos']<-MIN_ADICIONAL2[,'Voz nac. (min)']-MIN_ADICIONAL2[,'Voz (min)']
-            MIN_ADICIONAL2[,'Precio Real']<- 0
-            MIN_ADICIONAL2[,'Delta']<-MIN_ADICIONAL2[,'Voz nacional (CLP)']-MIN_ADICIONAL2[,'Precio Real']
+            MIN_ADICIONAL2[,'Precio Real']<-0
+            MIN_ADICIONAL2[,'Delta']<-MIN_ADICIONAL2[,'Voz nacional']-MIN_ADICIONAL2[,'Precio Real']
             MIN_ADICIONAL2<<-MIN_ADICIONAL2
-            cdr4<-subset(cdr3,select = c("Numero de llamada","Servicio llamado"))
+            
+            
+            cdr4<-subset(cdr3,select = c("Número de llamada","Servicio llamado"))
             
             MIN_ADICIONAL<-rbind(MIN_ADICIONAL1,MIN_ADICIONAL2)
-            
-            MIN_ADICIONAL<-merge(MIN_ADICIONAL,cdr3,by.x = "Acceso",by.y = "Numero de llamada",all.x = TRUE)
+            cdr3[,'Número de llamada']<-as.character(cdr3[["Número de llamada"]])
+            MIN_ADICIONAL[,'Acceso']<-as.character(MIN_ADICIONAL[["Acceso"]])
+            MIN_ADICIONAL<-merge(MIN_ADICIONAL,cdr3,by.x = "Acceso",by.y = "Número de llamada",all.x = TRUE)
             a<-duplicated(MIN_ADICIONAL[["Acceso"]],fromLast = FALSE)
             MIN_ADICIONAL[["Duplicados"]]<-a
             MIN_ADICIONAL<-subset(MIN_ADICIONAL,MIN_ADICIONAL[["Duplicados"]]=="FALSE")
@@ -2314,52 +2327,54 @@ uso<<-uso
             print("Total min adicional")
             print(sum(MIN_ADICIONAL[["Delta"]]))
             ##########################CONTRATO PLAN Y A GRANEL##############
-            PlanContrato<<-subset(Consolidado,Consolidado[["Importe de las opciones descontadas (CLP)"]]!=Consolidado[["Precio (CLP)"]]&Consolidado[["Precio (CLP)"]]!=0&Consolidado[["Estado acceso"]]=="Activo")
-            PlanContrato[,'Delta']<<-PlanContrato[,'Importe de las opciones descontadas (CLP)']-PlanContrato[,'Precio (CLP)']
-            PlanContrato<<-subset(PlanContrato,PlanContrato[["Delta"]]>0)
+            PlanContrato<-subset(Consolidado,Consolidado[["Importe de las opciones descontadas"]]!=Consolidado[["Precio (CLP)"]]&Consolidado[["Precio (CLP)"]]!=0&Consolidado[["Estado acceso"]]=="Activo")
+            PlanContrato[,'Delta']<-PlanContrato[,'Importe de las opciones descontadas']-PlanContrato[,'Precio (CLP)']
+            PlanContrato<-subset(PlanContrato,PlanContrato[["Delta"]]>0)
+            PlanContrato<<-PlanContrato
             print("Total Plan Contrato")
             print(sum(PlanContrato[["Delta"]]))
-            PlanContratoGranel<<-subset(Consolidado,Consolidado[["Precio/min (CLP)"]]>0&Consolidado[["Estado acceso"]]=="Activo")
-            PlanContratoGranel[,'Precio real (CLP)']<<-(PlanContratoGranel[,'Voz nacional (seg)']/60)*PlanContratoGranel[,'Precio/min (CLP)']
-            PlanContratoGranel[,'Delta']<<-PlanContratoGranel[["Voz nacional (CLP)"]]+PlanContratoGranel[["Importe de las opciones descontadas (CLP)"]]-((PlanContratoGranel[,'Voz nacional (seg)']/60)*PlanContratoGranel[,'Precio/min (CLP)'])
-            PlanContratoGranel<<-subset(PlanContratoGranel,PlanContratoGranel[["Delta"]]>0)
+            PlanContratoGranel<-subset(Consolidado,Consolidado[["Precio/min (CLP)"]]>0&Consolidado[["Estado acceso"]]=="Activo")
+            PlanContratoGranel[,'Precio real (CLP)']<-(PlanContratoGranel[,'Voz nac. (sec)']/60)*PlanContratoGranel[,'Precio/min (CLP)']
+            PlanContratoGranel[,'Delta']<-PlanContratoGranel[["Voz nacional"]]+PlanContratoGranel[["Importe de las opciones descontadas"]]-((PlanContratoGranel[,'Voz nac. (sec)']/60)*PlanContratoGranel[,'Precio/min (CLP)'])
+            PlanContratoGranel<-subset(PlanContratoGranel,PlanContratoGranel[["Delta"]]>0)
+            PlanContratoGranel<<-PlanContratoGranel
             print("Total Plan Granel")
             print(sum(PlanContratoGranel[["Delta"]]))
             ##############################PAISES ROAMING VOZ####################
-            
+        
             RoaVoz<-subset(Consolidado,
                            Consolidado[["Estado acceso"]]=="Activo"&
-                             Consolidado[["Voz roaming (CLP)"]]>0)
-            
+                             Consolidado[["Voz roaming"]]>0)
+            if(length(RoaVoz[["Acceso"]]>0)){
             cdrA<-subset(cdr2,cdr2[["Tipo de llamada"]]=="Voz")
             cdrB<-cdrA
-            a<-duplicated(cdrA[["Pais emisor"]])
-            b<-duplicated(cdrB[["Pais destinatario"]])
+            a<-duplicated(cdrA[["País emisor"]])
+            b<-duplicated(cdrB[["País destinatario"]])
             cdrA[["duplicados"]]<-a
             cdrA<-subset(cdrA,cdrA[["duplicados"]]=="FALSE")
             
             cdrB[["duplicados"]]<-b
             cdrB<-subset(cdrB,cdrB[["duplicados"]]=="FALSE")
-            paisesA<-data.frame(cdrA[["Pais emisor"]])
-            names(paisesA)<-c("Pais")
-            paisesB<-data.frame(cdrB[["Pais destinatario"]])
-            names(paisesB)<-c("Pais")
+            paisesA<-data.frame(cdrA[["País emisor"]])
+            names(paisesA)<-c("País")
+            paisesB<-data.frame(cdrB[["País destinatario"]])
+            names(paisesB)<-c("País")
             paises<-rbind(paisesA,paisesB)
-            a<-duplicated(paises[["Pais"]])
+            a<-duplicated(paises[["País"]])
             paises[["duplicados"]]<-a
             paises<-subset(paises,paises[["duplicados"]]=="FALSE")
             rm(cdrA,cdrB,paisesA,paisesB,a,b)
             
-            PMatriz<-matrix(nrow = length(RoaVoz[["Acceso"]]),ncol = length(paises[["Pais"]]))
+            PMatriz<-matrix(nrow = length(RoaVoz[["Acceso"]]),ncol = length(paises[["País"]]))
             
             for(i in 1:length(RoaVoz[["Acceso"]])){
               cdrC<-subset(cdr2,cdr2[["Tipo de llamada"]]=="Voz" &
-                             cdr2[["Numero de llamada"]]==RoaVoz[["Acceso"]][i])
-              for(j in 1:length(paises[["Pais"]])){
-                P<-as.character(paises[["Pais"]][j])
-                for(k in 1:length(cdrC[["Numero de llamada"]])){
-                  Pe<-as.character(cdrC[["Pais emisor"]][k])
-                  Pd<-as.character(cdrC[["Pais destinatario"]][k])
+                             cdr2[["Número de llamada"]]==RoaVoz[["Acceso"]][i])
+              for(j in 1:length(paises[["País"]])){
+                P<-as.character(paises[["País"]][j])
+                for(k in 1:length(cdrC[["Número de llamada"]])){
+                  Pe<-as.character(cdrC[["País emisor"]][k])
+                  Pd<-as.character(cdrC[["País destinatario"]][k])
                   if(Pe==P){
                     PMatriz[i,j]<-P
                   }
@@ -2369,51 +2384,82 @@ uso<<-uso
                 }
               }
             }
-            PMatriz<-data.frame(PMatriz)
-            names(PMatriz)<-paises[["Pais"]]
+            
+            PMatriz<-data.frame((PMatriz))
+            
+            names(PMatriz)<-paises[["País"]]
+            RoaVozPaises<<-subset(RoaVoz,select=c("Acceso"))
+            RoaVozPaises<-cbind(RoaVozPaises,PMatriz)
+            RoaVozPaises<<-RoaVozPaises
+            RoaVoz<<-RoaVoz
+          
             RoaVoz<-subset(RoaVoz,select = c("Acceso",
                                              "Estado acceso",
                                              "Tipo",
                                              "Producto",
-                                             "Centro de facturacion",
+                                             "Centro de facturación",
                                              "Cuenta cliente",
                                              "Factura",
-                                             "Total (CLP)",
-                                             "Plano tarifario (CLP)",
-                                             "Servicios (CLP)",
-                                             "Servicios opciones (CLP)",
-                                             "Servicios otros (CLP)",
-                                             "Descuentos (CLP)",
-                                             "Descuentos opciones (CLP)",
-                                             "Descuentos otros (CLP)",
-                                             "Uso rebajado (CLP)",
-                                             "Voz (CLP)",
-                                             "Voz roaming (CLP)",
-                                             "Voz roaming (seg)"))
-            RoaVoz<-cbind(RoaVoz,PMatriz)
+                                             "Total",
+                                             "Plano tarifario",
+                                             "Servicios",
+                                             "Servicios > Opciones",
+                                             "Servicios > Otros",
+                                             "Descuentos",
+                                             "Descuento > Opciones",
+                                             "Descuento > Otros",
+                                             "Uso (rebajado)",
+                                             "Voz",
+                                             "Voz roaming",
+                                             "Voz roaming (sec)"))
+            #RoaVoz<-cbind(RoaVoz,PMatriz)
+            }
+            else{
+              RoaVoz<-subset(RoaVoz,select = c("Acceso",
+                                               "Estado acceso",
+                                               "Tipo",
+                                               "Producto",
+                                               "Centro de facturación",
+                                               "Cuenta cliente",
+                                               "Factura",
+                                               "Total",
+                                               "Plano tarifario",
+                                               "Servicios",
+                                               "Servicios > Opciones",
+                                               "Servicios > Otros",
+                                               "Descuentos",
+                                               "Descuento > Opciones",
+                                               "Descuento > Otros",
+                                               "Uso (rebajado)",
+                                               "Voz",
+                                               "Voz roaming",
+                                               "Voz roaming (sec)"))
+              RoaVozPaises<-subset(RoaVoz,select = "Acceso")
+              RoaVozPaises<<-RoaVozPaises
+            }
             RoaVoz<<-RoaVoz
-            
             ##############################PAISES ROAMING DATOS ###################
             
             RoaDat<-subset(Consolidado,
                            Consolidado[["Estado acceso"]]=="Activo"&
-                             Consolidado[["Datos inter (CLP)"]]>0)
+                             Consolidado[["Datos inter."]]>0)
+            if(length(RoaDat[["Acceso"]]>0)){
             cdrA<-subset(cdr2,cdr2[["Tipo de llamada"]]=="Datos")
-            a<-duplicated(cdrA[["Pais emisor"]])
+            a<-duplicated(cdrA[["País emisor"]])
             cdrA[["duplicados"]]<-a
             cdrA<-subset(cdrA,cdrA[["duplicados"]]=="FALSE")
-            paises<-data.frame(cdrA[["Pais emisor"]])
-            names(paises)<-c("Pais")
-            rm(cdrA,cdrB,a)
-            PMatriz<-matrix(nrow = length(RoaDat[["Acceso"]]),ncol = length(paises[["Pais"]]))
+            paises<-data.frame(cdrA[["País emisor"]])
+            names(paises)<-c("País")
+            rm(cdrA,a)
+            PMatriz<-matrix(nrow = length(RoaDat[["Acceso"]]),ncol = length(paises[["País"]]))
             for(i in 1:length(RoaDat[["Acceso"]])){
               cdrC<-subset(cdr2,cdr2[["Tipo de llamada"]]=="Datos" &
-                             cdr2[["Numero de llamada"]]==RoaDat[["Acceso"]][i])
-              for(j in 1:length(paises[["Pais"]])){
-                P<-as.character(paises[["Pais"]][j])
-                for(k in 1:length(cdrC[["Numero de llamada"]])){
-                  Pe<-as.character(cdrC[["Pais emisor"]][k])
-                  Pd<-as.character(cdrC[["Pais destinatario"]][k])
+                             cdr2[["Número de llamada"]]==RoaDat[["Acceso"]][i])
+              for(j in 1:length(paises[["País"]])){
+                P<-as.character(paises[["País"]][j])
+                for(k in 1:length(cdrC[["Número de llamada"]])){
+                  Pe<-as.character(cdrC[["País emisor"]][k])
+                  Pd<-as.character(cdrC[["País destinatario"]][k])
                   if(Pe==P){
                     PMatriz[i,j]<-P
                   }
@@ -2424,31 +2470,58 @@ uso<<-uso
               }
             }
             PMatriz<-data.frame(PMatriz)
-            names(PMatriz)<-paises[["Pais"]]
+            names(PMatriz)<-paises[["País"]]
+            RoaDatPaises<-subset(RoaDat,select = "Acceso")
+            RoaDatPaises<-cbind(RoaDatPaises,PMatriz)
+            RoaDatPaises<<-RoaDatPaises
             RoaDat<-subset(RoaDat,select = c("Acceso",
                                              "Estado acceso",
                                              "Tipo",
                                              "Producto",
-                                             "Centro de facturacion",
+                                             "Centro de facturación",
                                              "Cuenta cliente",
                                              "Factura",
-                                             "Total (CLP)",
-                                             "Plano tarifario (CLP)",
-                                             "Servicios (CLP)",
-                                             "Servicios opciones (CLP)",
-                                             "Servicios otros (CLP)",
-                                             "Descuentos (CLP)",
-                                             "Descuentos opciones (CLP)",
-                                             "Descuentos otros (CLP)",
-                                             "Uso rebajado (CLP)",
-                                             "Datos (CLP)",
-                                             "Datos inter (CLP)",
-                                             "Datos inter (KB)"))
-            RoaDat<-cbind(RoaDat,PMatriz)
+                                             "Total",
+                                             "Plano tarifario",
+                                             "Servicios",
+                                             "Servicios > Opciones",
+                                             "Servicios > Otros",
+                                             "Descuentos",
+                                             "Descuento > Opciones",
+                                             "Descuento > Otros",
+                                             "Uso (rebajado)",
+                                             "Datos",
+                                             "Datos inter.",
+                                             "Datos inter. (KB)"))
+            #RoaDat<-cbind(RoaDat,PMatriz)
+            }
+            else{
+              RoaDat<-subset(RoaDat,select = c("Acceso",
+                                               "Estado acceso",
+                                               "Tipo",
+                                               "Producto",
+                                               "Centro de facturación",
+                                               "Cuenta cliente",
+                                               "Factura",
+                                               "Total",
+                                               "Plano tarifario",
+                                               "Servicios",
+                                               "Servicios > Opciones",
+                                               "Servicios > Otros",
+                                               "Descuentos",
+                                               "Descuento > Opciones",
+                                               "Descuento > Otros",
+                                               "Uso (rebajado)",
+                                               "Datos",
+                                               "Datos inter.",
+                                               "Datos inter. (KB)"))
+              RoaDatPaises<-subset(RoaDat,select = "Acceso")
+              RoaDatPaises<<-RoaDatPaises
+            }
             RoaDat<<-RoaDat
-            
           }
           ############Consolidado###########
+          dbGetQuery(DB, "SET NAMES 'utf8';")
           dbWriteTable(
             DB,
             "consolidado",
@@ -2460,110 +2533,114 @@ uso<<-uso
             allow.keywords = FALSE
           )
           ##################Servicios Facturados###############
-          SFPlanes<-subset(SFPlanes_final,select = c("Acceso","Estado acceso","Producto","Tipo de producto","Centro de facturacion","Importe de las opciones facturadas (CLP)",
-                                                     "Importe descuentos sobre plano tarifario (CLP)","Importe de las opciones descontadas (CLP)","Acceso fix"))
-          SFOpciones<-subset(SFOpciones,select = c("Acceso","Estado acceso","Producto","Tipo de producto","Centro de facturacion","Importe de las opciones facturadas (CLP)",
-                                                   "Importe descuentos sobre plano tarifario (CLP)","Importe de las opciones descontadas (CLP)","Acceso fix"))
-          SF_Final<-subset(SF_Final,select = c("Acceso","Estado acceso","Producto","Tipo de producto","Centro de facturacion","Importe de las opciones facturadas (CLP)",
-                                               "Importe descuentos sobre plano tarifario (CLP)","Importe de las opciones descontadas (CLP)","Acceso fix"))
-          SF_Apartados<-subset(SF_Apartados,select = c("Acceso","Estado acceso","Producto","Tipo de producto","Centro de facturacion","Importe de las opciones facturadas (CLP)",
-                                                       "Importe descuentos sobre plano tarifario (CLP)","Importe de las opciones descontadas (CLP)","Acceso fix","Revisar"))
+         SFPlanes_final[,'Centro de facturación']<-as.character(SFPlanes_final[["Centro de facturación"]])
+          
+          SFPlanes<<-subset(SFPlanes_final,select = c("Acceso",
+                                                     "Estado acceso",
+                                                     "Producto",
+                                                     "Tipo de producto",
+                                                     "Centro de facturación",
+                                                     "Importe de las opciones facturadas",
+                                                     "Importe descuentos sobre plano tarifario",
+                                                     "Importe de las opciones descontadas"))
+          SFOpciones[,'Centro de facturación']<-as.character(SFOpciones[["Centro de facturación"]])
+          SFOpciones<<-subset(SFOpciones,select = c("Acceso",
+                                                   "Estado acceso",
+                                                   "Producto",
+                                                   "Tipo de producto",
+                                                   "Centro de facturación",
+                                                   "Importe de las opciones facturadas",
+                                                   "Importe descuentos sobre plano tarifario",
+                                                   "Importe de las opciones descontadas"))
+          SF_Final[,'Centro de facturación']<-as.character(SF_Final[["Centro de facturación"]])
+          SF_Final<<-subset(SF_Final,select = c("Acceso",
+                                               "Estado acceso",
+                                               "Producto",
+                                               "Tipo de producto",
+                                               "Centro de facturación",
+                                               "Importe de las opciones facturadas",
+                                               "Importe descuentos sobre plano tarifario",
+                                               "Importe de las opciones descontadas"))
+          SF_Apartados[,'Centro de facturación']<-as.character(SF_Apartados[["Centro de facturación"]])
+          SF_Apartados<<-subset(SF_Apartados,select = c("Acceso",
+                                                       "Estado acceso",
+                                                       "Producto",
+                                                       "Tipo de producto",
+                                                       "Centro de facturación",
+                                                       "Importe de las opciones facturadas",
+                                                       "Importe descuentos sobre plano tarifario",
+                                                       "Importe de las opciones descontadas",
+                                                       "Revisar"))
+          
+          # str(SF_Apartados["Centro de facturación"])
+          # str(SF_Final["Centro de facturación"])
+          # str(SFPlanes["Centro de facturación"])
+          # str(SFOpciones["Centro de facturación"])
+          # str(RoaVoz["Centro de facturación"])
+          # str(RoaDat["Centro de facturación"])
+          
+          dbGetQuery(DB, "SET NAMES 'utf8';")
           dbWriteTable(
             DB,
             "sf_planes",
             SFPlanes,
-            field.types = list(
-              `Acceso` = "varchar(255)",
-              `Estado acceso` = "varchar(255)",
-              `Producto` = "varchar(255)",
-              `Tipo de producto` = "varchar(255)",
-              `Centro de facturacion` = "varchar(255)",
-              `Importe de las opciones facturadas (CLP)` = "double(15,2)",
-              `Importe descuentos sobre plano tarifario (CLP)` = "double(15,2)",
-              `Importe de las opciones descontadas (CLP)` = "double(15,2)",
-              `Acceso fix` = "varchar(255)"
-            ),
+            field.types = NULL,
             row.names = FALSE,
             overwrite = TRUE,
             append = FALSE,
             allow.keywords = FALSE
           )
+          SFPlanes<<-SFPlanes
+          #dbGetQuery(DB, "SET NAMES 'utf8';")
           dbWriteTable(
             DB,
             "sf_opciones",
             SFOpciones,
-            field.types = list(
-              `Acceso` = "varchar(255)",
-              `Estado acceso` = "varchar(255)",
-              `Producto` = "varchar(255)",
-              `Tipo de producto` = "varchar(255)",
-              `Centro de facturacion` = "varchar(255)",
-              `Importe de las opciones facturadas (CLP)` = "double(15,2)",
-              `Importe descuentos sobre plano tarifario (CLP)` = "double(15,2)",
-              `Importe de las opciones descontadas (CLP)` = "double(15,2)",
-              `Acceso fix` = "varchar(255)"
-            ),
+            field.types = NULL,
             row.names = FALSE,
             overwrite = TRUE,
             append = FALSE,
             allow.keywords = FALSE
           )
+          dbGetQuery(DB, "SET NAMES 'utf8';")
           dbWriteTable(
             DB,
             "sf_final",
             SF_Final,
-            field.types = list(
-              `Acceso` = "varchar(255)",
-              `Estado acceso` = "varchar(255)",
-              `Producto` = "varchar(255)",
-              `Tipo de producto` = "varchar(255)",
-              `Centro de facturacion` = "varchar(255)",
-              `Importe de las opciones facturadas (CLP)` = "double(15,2)",
-              `Importe descuentos sobre plano tarifario (CLP)` = "double(15,2)",
-              `Importe de las opciones descontadas (CLP)` = "double(15,2)",
-              `Acceso fix` = "varchar(255)"
-            ),
+            field.types = NULL,
             row.names = FALSE,
             overwrite = TRUE,
             append = FALSE,
             allow.keywords = FALSE
           )
+          dbGetQuery(DB, "SET NAMES 'utf8';")
           dbWriteTable(
             DB,
             "sf_apartados",
             SF_Apartados,
-            field.types = list(
-              `Acceso` = "varchar(255)",
-              `Estado acceso` = "varchar(255)",
-              `Producto` = "varchar(255)",
-              `Tipo de producto` = "varchar(255)",
-              `Centro de facturacion` = "varchar(255)",
-              `Importe de las opciones facturadas (CLP)` = "double(15,2)",
-              `Importe descuentos sobre plano tarifario (CLP)` = "double(15,2)",
-              `Importe de las opciones descontadas (CLP)` = "double(15,2)",
-              `Acceso fix` = "varchar(255)",
-              `Revisar` = "double(15,2)"
-            ),
+            field.types = NULL,
             row.names = FALSE,
             overwrite = TRUE,
             append = FALSE,
             allow.keywords = FALSE
           )
+          
           ##################Min Adicional###################
+          dbGetQuery(DB, "SET NAMES 'latin1';")
           MIN_ADICIONAL<-subset(MIN_ADICIONAL,select = c(
             "Acceso",
             "Estado acceso",
             "Tipo",
             "Producto",
-            "Centro de facturacion",
+            "Centro de facturación",
             "Cuenta cliente",
             "Factura",
-            "Total (CLP)",
-            "Plano tarifario (CLP)",
-            "Voz (CLP)",
-            "Voz nacional (CLP)",
-            "N. Voz nacional",
-            "Voz nacional (seg)",
+            "Total",
+            "Plano tarifario",
+            "Voz",
+            "Voz nacional",
+            "N.° Voz nacional",
+            "Voz nac. (sec)",
             "Voz nac. (min)",
             "Voz (min)",
             "Delta minutos",
@@ -2575,27 +2652,7 @@ uso<<-uso
             DB,
             "min_adicional",
             MIN_ADICIONAL,
-            field.types = list(
-              `Acceso` = "varchar(255)",
-              `Estado acceso` = "varchar(255)",
-              `Tipo` = "varchar(255)",
-              `Producto` = "varchar(255)",
-              `Centro de facturacion` = "varchar(255)",
-              `Cuenta cliente` = "varchar(255)",
-              `Factura` = "varchar(255)",
-              `Total (CLP)` = "double(15,2)",
-              `Plano tarifario (CLP)` = "double(15,2)",
-              `Voz (CLP)` = "double(15,2)",
-              `Voz nacional (CLP)` = "double(15,2)",
-              `N. Voz nacional` = "double(15,2)",
-              `Voz nacional (seg)` = "double(15,2)",
-              `Voz nac. (min)` = "double(15,2)",
-              `Voz (min)` = "double(15,2)",
-              `Delta minutos` = "double(15,2)",
-              `Precio Real` = "double(15,2)",
-              `Servicio llamado` = "varchar(255)",
-              `Delta` = "double(15,2)"
-            ),
+            field.types = NULL,
             row.names = FALSE,
             overwrite = TRUE,
             append = FALSE,
@@ -2606,12 +2663,12 @@ uso<<-uso
                                                        "Estado acceso",
                                                        "Tipo Contrato",
                                                        "Producto",
-                                                       "Centro de facturacion",
+                                                       "Centro de facturación",
                                                        "Cuenta cliente",
                                                        "Factura",
-                                                       "Importe de las opciones facturadas (CLP)",
-                                                       "Importe descuentos sobre plano tarifario (CLP)",
-                                                       "Importe de las opciones descontadas (CLP)",
+                                                       "Importe de las opciones facturadas",
+                                                       "Importe descuentos sobre plano tarifario",
+                                                       "Importe de las opciones descontadas",
                                                        "Precio (CLP)",
                                                        "Delta"))
           PlanContrato<<-PlanContrato
@@ -2619,20 +2676,7 @@ uso<<-uso
             DB,
             "plancontrato",
             PlanContrato,
-            field.types = list(
-              `Acceso` = "varchar(255)",
-              `Estado acceso` = "varchar(255)",
-              `Tipo Contrato` = "varchar(255)",
-              `Producto` = "varchar(255)",
-              `Centro de facturacion` = "varchar(255)",
-              `Cuenta cliente` = "varchar(255)",
-              `Factura` = "varchar(255)",
-              `Importe de las opciones facturadas (CLP)` = "double(15,2)",
-              `Importe descuentos sobre plano tarifario (CLP)` = "double(15,2)",
-              `Importe de las opciones descontadas (CLP)` = "double(15,2)",
-              `Precio (CLP)` = "double(15,2)",
-              `Delta` = "double(15,2)"
-            ),
+            field.types = NULL,
             row.names = FALSE,
             overwrite = TRUE,
             append = FALSE,
@@ -2643,12 +2687,12 @@ uso<<-uso
                                                                    "Estado acceso",
                                                                    "Tipo Contrato",
                                                                    "Producto",
-                                                                   "Centro de facturacion",
+                                                                   "Centro de facturación",
                                                                    "Cuenta cliente",
                                                                    "Factura",
-                                                                   "Importe de las opciones facturadas (CLP)",
-                                                                   "Importe descuentos sobre plano tarifario (CLP)",
-                                                                   "Importe de las opciones descontadas (CLP)",
+                                                                   "Importe de las opciones facturadas",
+                                                                   "Importe descuentos sobre plano tarifario",
+                                                                   "Importe de las opciones descontadas",
                                                                    "Precio/min (CLP)",
                                                                    "Precio (CLP)",
                                                                    "Voz nac. (min)",
@@ -2659,23 +2703,7 @@ uso<<-uso
             DB,
             "plangranel",
             PlanContratoGranel,
-            field.types = list(
-              `Acceso` = "varchar(255)",
-              `Estado acceso` = "varchar(255)",
-              `Tipo Contrato` = "varchar(255)",
-              `Producto` = "varchar(255)",
-              `Centro de facturacion` = "varchar(255)",
-              `Cuenta cliente` = "varchar(255)",
-              `Factura` = "varchar(255)",
-              `Importe de las opciones facturadas (CLP)` = "double(15,2)",
-              `Importe descuentos sobre plano tarifario (CLP)` = "double(15,2)",
-              `Importe de las opciones descontadas (CLP)` = "double(15,2)",
-              `Precio/min (CLP)` = "double(15,2)",
-              `Precio (CLP)` = "double(15,2)",
-              `Voz nac. (min)` = "double(15,2)",
-              `Precio real (CLP)` = "double(15,2)",
-              `Delta` = "double(15,2)"
-            ),
+            field.types = NULL,
             row.names = FALSE,
             overwrite = TRUE,
             append = FALSE,
@@ -2685,28 +2713,16 @@ uso<<-uso
             DB,
             "cdr_relevante",
             cdr2,
-            field.types = list(
-              `Numero de llamada` = "char(11)",
-              `Numero de llamada fix` = "int(9)",
-              `Numero llamado` = "varchar(20)",
-              `Tipo de llamada` = "ENUM('Datos','MMS','SMS','Voz','E-mail','Desconocidos') NOT NULL",
-              `Fecha de llamada` = "DATE",
-              `Geografia` = "ENUM('A internacional','Local','Regional','Nacional desconocido','Roaming entrante','Roaming saliente','Roaming desconocido','Internacional desconocido','Desconocidos') NOT NULL",
-              `Pais emisor` = "varchar(40)",
-              `Pais destinatario` = "varchar(40)",
-              `Duracion` = "SMALLINT(8) UNSIGNED NOT NULL",
-              `Volumen` = "MEDIUMINT(10) UNSIGNED NOT NULL",
-              `Precio` = "FLOAT(10,2) NOT NULL",
-              `Tarificacion` = "ENUM('En el plan','Más alla del plan','Desconocidos','Fuera de plan') NOT NULL",
-              `Servicio llamado` = "varchar(255)",
-              `Organizacion Proveedor` = "varchar(255)"
-            ),
+            field.types = NULL,
             row.names = FALSE,
             overwrite = TRUE,
             append = FALSE,
             allow.keywords = FALSE
           )
           #################Roaming Voz###########
+          
+          RoaVoz<<-RoaVoz
+          dbGetQuery(DB, "SET NAMES 'latin1';")
           dbWriteTable(
             DB,
             "roaming_voz",
@@ -2717,11 +2733,39 @@ uso<<-uso
             append = FALSE,
             allow.keywords = FALSE
           )
+          RoaVozPaises<<-RoaVozPaises
+          dbGetQuery(DB, "SET NAMES 'utf8';")
+          dbWriteTable(
+            DB,
+            "rvozpaises",
+            RoaVozPaises,
+            field.types = NULL ,
+            row.names = FALSE,
+            overwrite = TRUE,
+            append = FALSE,
+            allow.keywords = FALSE
+          )
           #################Roaming Datos########
+          
+          #RoaDat<-subset(RoaDat,select = TRUE)
+          RoaDat<<-RoaDat
+          dbGetQuery(DB, "SET NAMES 'latin1';")
           dbWriteTable(
             DB,
             "roaming_datos",
             RoaDat,
+            field.types = NULL ,
+            row.names = FALSE,
+            overwrite = TRUE,
+            append = FALSE,
+            allow.keywords = FALSE
+          )
+          RoaDatPaises<<-RoaDatPaises
+          dbGetQuery(DB, "SET NAMES 'utf8';")
+          dbWriteTable(
+            DB,
+            "rdatpaises",
+            RoaDatPaises,
             field.types = NULL ,
             row.names = FALSE,
             overwrite = TRUE,
@@ -2738,7 +2782,7 @@ uso<<-uso
       }
     }
     ####################UPLOAD CONSOLIDADO############
-    if(!is.null(Consolidado)){
+    if(!is.null(Consolidado)&client!="afm"){
       dbGetQuery(DB, "SET NAMES 'latin1';")
       Consolidado<<-subset(Consolidado,TRUE)
     dbWriteTable(

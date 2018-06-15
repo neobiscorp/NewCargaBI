@@ -94,7 +94,7 @@ shinyUI(fluidPage(
         condition = "input.Client =='Informe Gestion Impresion'||input.Client =='Informe Gestion Telefonia'||input.Client =='tester'",
         fileInput(
           'presupuesto',
-          'Elegir los Archivos CSV que contenga los presupuestos',
+          'Elegir los Archivos CSV que contenga los presupuestos (Opcional)',
           multiple = T,
           accept = c('text/csv',
                      'text/comma-separated-values,text/plain',
@@ -105,7 +105,7 @@ shinyUI(fluidPage(
         condition = "input.Client =='Informe Gestion Impresion'||input.Client =='Informe Gestion Telefonia'||input.Client =='tester'",
         fileInput(
           'facturacion',
-          'Elegir los Archivos CSV que contenga las facturaciones sin NC',
+          'Elegir los Archivos CSV que contenga las facturaciones sin NC (Opcional)',
           multiple = T,
           accept = c('text/csv',
                      'text/comma-separated-values,text/plain',
