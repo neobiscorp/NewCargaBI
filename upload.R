@@ -14,8 +14,8 @@
     password = "",
     dbname = paste0(client)
   )
-  #dbGetQuery(DB, "SET NAMES 'utf8';")
-  dbGetQuery(DB, "SET NAMES 'latin1';")
+  dbGetQuery(DB, "SET NAMES 'utf8';")
+  #dbGetQuery(DB, "SET NAMES 'latin1';")
   dbWriteTable(
     DB,
     "tester",
@@ -28,5 +28,6 @@
   )
   killDbConnections()
   }
+  
 upload(uso)
 
