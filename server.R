@@ -1364,9 +1364,9 @@ uso<<-uso
       
       nombre <<- input$nombre
       if (nombre=="Aguas Andinas"){
-      link<<-"https://cdn.pbrd.co/images/GWEts67.jpg"}
+      link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/aguasandinas.png"}
       else if (nombre =="Carabineros de Chile"){
-        link<<-"https://cdn.pbrd.co/images/GWEu27P.png"
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/carabineros.png"
       }
       else if (nombre =="Claro"){
         link<<-"https://cdn.pbrd.co/images/GWEuhGn.jpg"
@@ -1375,31 +1375,34 @@ uso<<-uso
         link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/copec.png"
       }
       else if (nombre =="Enap"){
-        link<<-"https://cdn.pbrd.co/images/GWEuMor.gif"
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/enap.png"
       }
       else if (nombre =="Hogar de Cristo"){
         link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/hdc.png"
       }
-      else if (nombre =="Hortifrut"){
-        link<<-"https://cdn.pbrd.co/images/H3oxeYy.png"
-      }
       else if (nombre =="Nuevo Pudahuel"){
-        link<<-"https://cdn.pbrd.co/images/GWEvad0.png"
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/nuevopudahuel.png"
       }
       else if (nombre =="Parque Arauco"){
-        link<<-"https://cdn.pbrd.co/images/GWEvklk.png"
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/parquearauco.png"
       }
       else if (nombre =="Rhona"){
-        link<<-"https://cdn.pbrd.co/images/GWEvuiJ.png"
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/rhona.png"
       }
       else if (nombre =="SAAM"){
-        link<<-"https://cdn.pbrd.co/images/GWEvFgU.png"
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/saam.png"
       }
       else if (nombre =="Subsole"){
-        link<<-"https://cdn.pbrd.co/images/GWEvOqH.png"
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/subsole.png"
       }
       else if (nombre =="Walmart"){
-        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/walmart.png"
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/walmartcl.png"
+      }
+      else if (nombre =="Neobis"){
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/neobis.png"
+      }
+      else if (nombre == "Hortifrut"){
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/hortifrut.png"
       }
       else{print("No se encontro un link Para el nombre seleccionado")}
       #Create table logo_cliente if doesnt exist
