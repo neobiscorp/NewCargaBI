@@ -1369,7 +1369,7 @@ uso<<-uso
         link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/carabineros.png"
       }
       else if (nombre =="Claro"){
-        link<<-"https://cdn.pbrd.co/images/GWEuhGn.jpg"
+        link<<-"https://item4.neobiscorp.com/images/logos_powerbi/proveedores/claro.png"
       }
       else if (nombre =="Copec"){
         link<<-"https://item4.neobiscorp.com/images/logos_powerbi/clientes/copec.png"
